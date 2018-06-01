@@ -1,3 +1,18 @@
+type DeepPartialObject<A> = { [K in keyof A]?: DeepPartial<A[K]> }
+type DeepPartial<A> = A extends object ? DeepPartialObject<A> : A
+
+export namespace DeepPartial {
+  export const merge = <A>(a: A, someA: DeepPartial<A>): A => {
+    if (typeof someA === "string" || typeof someA === "number" || typeof someA === "function" || someA === undefined) {
+      return someA as A
+    }
+
+    const keys = Object.keys(someA) as [keyof DeepPartialObject<A>]
+    const partial = keys.reduce((acc, key) => ({...acc, [key]: merge(a[key], (<any>someA)[key])}), {})
+    return { ...a as any, ...partial }
+  }
+}
+
 type Optic<A, B, Params> =
   MaybeSelector<A, B, Params>
   | Selector<A, B, Params>
@@ -35,11 +50,12 @@ export class Selector<A, B, Params extends {} = {}> {
     this.set = _set as any
     this.modify = this._modify as any
     this.merge = this._merge as any
+    this.deepMerge = this._deepMerge as any
   }
 
   get: {} extends Params
-      ? (a: A) => B
-      : (a: A, params: Params) => B
+    ? (a: A) => B
+    : (a: A, params: Params) => B
 
   set: {} extends Params
     ? (a: A, b: B) => A
@@ -52,14 +68,23 @@ export class Selector<A, B, Params extends {} = {}> {
   private _modify = (a: A, f: (b: B) => B, params: Params): A =>
     this._set(a, f(this._get(a, params)), params)
 
-  merge: B extends {}
+  merge: B extends object
     ? {} extends Params
-      ? (a: A, b: Partial<B>) => A
-      : (a: A, b: Partial<B>, params: Params) => A
-
+      ? (a: A, someB: Partial<B>) => A
+      : (a: A, someB: Partial<B>, params: Params) => A
     : never
+
   private _merge = (a: A, someB: Partial<B>, params: Params): A =>
     this._modify(a, b => ({ ...b as any, ...someB as any }), params)
+
+  deepMerge: B extends object
+    ? {} extends Params
+      ? (a: A, b: DeepPartial<B>) => A
+      : (a: A, b: DeepPartial<B>, params: Params) => A
+    : never
+
+  private _deepMerge = (a: A, someB: DeepPartial<B>, params: Params): A =>
+    this._modify(a, b => DeepPartial.merge(b, someB), params)
 
   compose<C, BCParams>(other: Maybe<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
   compose<C, BCParams>(other: Certain<B, C, BCParams>): Selector<A, C, Params & BCParams>
@@ -111,8 +136,8 @@ export class MaybeSelector<A, B, Params> {
     this.set = _set as any
     this.modify = this._modify as any
     this.merge = this._merge as any
+    this.deepMerge = this._deepMerge as any
   }
-
 
   get: {} extends Params
     ? (a: A) => B
@@ -131,14 +156,23 @@ export class MaybeSelector<A, B, Params> {
     return b === null ? a : this._set(a, f(b), params)
   }
 
-  merge: B extends {}
+  merge: B extends object
     ? {} extends Params
-      ? (a: A, b: Partial<B>) => A
-      : (a: A, b: Partial<B>, params: Params) => A
+      ? (a: A, someB: Partial<B>) => A
+      : (a: A, someB: Partial<B>, params: Params) => A
     : never
 
   private _merge = (a: A, someB: Partial<B>, params: Params): A =>
     this._modify(a, b => ({ ...b as any, ...someB as any }), params)
+
+  deepMerge: B extends object
+    ? {} extends Params
+      ? (a: A, b: DeepPartial<B>) => A
+      : (a: A, b: DeepPartial<B>, params: Params) => A
+    : never
+
+  private _deepMerge = (a: A, someB: DeepPartial<B>, params: Params): A =>
+    this._modify(a, b => DeepPartial.merge(b, someB), params)
   
   compose<C, BCParams>(other: Optic<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams> {
     if (other instanceof Selector || other instanceof MaybeSelector) {
@@ -194,8 +228,8 @@ export class Converter<A, B, Params> {
   }
   
   convert: {} extends Params
-     ? (a: A) => B
-     : (a: A, params: Params) => B
+    ? (a: A) => B
+    : (a: A, params: Params) => B
 
   convertBack: {} extends Params
     ? (b: B) => A
@@ -258,8 +292,8 @@ export class MaybeConverter<A, B, Params> {
   }
   
   convert: {} extends Params
-     ? (a: A) => B | null
-     : (a: A, params: Params) => B | null
+    ? (a: A) => B | null
+    : (a: A, params: Params) => B | null
 
   convertBack: {} extends Params
     ? (b: B) => A
