@@ -25,8 +25,8 @@ type AnyConverter<A, B, Params> = Converter<A, B, Params> | MaybeConverter<A, B,
 type AnySelector<A, B, Params> = Selector<A, B, Params> | MaybeSelector<A, B, Params>
 
 interface IndexOverloads<A, B, Params> {
-  <K extends string>(key: K): MaybeSelector<A, B, Params & { [Key in K]: string }>
-  <K extends string>(key: K, ifNone: B): Selector<A, B, Params & { [Key in keyof K]: string }>
+  <K extends string>(key: K):       MaybeSelector<A, B, Params & { [Key in K]: string }>
+  <K extends string>(key: K, ifNone: B): Selector<A, B, Params & { [Key in K]: string }>
 }
 
 interface CertainPropOverloads<A, B, Params> {
@@ -51,6 +51,8 @@ export class Selector<A, B, Params extends {} = {}> {
     this.modify = this._modify as any
     this.merge = this._merge as any
     this.deepMerge = this._deepMerge as any
+    this.prop = this._prop as any
+    this.index = this._index as any
   }
 
   get: {} extends Params
@@ -119,16 +121,27 @@ export class Selector<A, B, Params extends {} = {}> {
 
   prop!: CertainPropOverloads<A, B, Params>
 
-  index!: B extends { [key: string]: infer C } ? IndexOverloads<B, C, Params> : never
-}
+  _prop = (...keys: string[]): any =>
+    this.compose(Biselect.props(...keys) as any)
 
-Selector.prototype.index = <C>(key: string, ifNone?: C) => {
-  let selector = Biselect.index(key)
-  return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
-}
+  index!: B extends { [key: string]: infer C } ? IndexOverloads<A, C, Params> : never
 
-Selector.prototype.prop = (...keys: string[]) =>
-  this.compose(Biselect.props(...keys))
+  _index = <C>(key: string, ifNone?: C) => {
+    let selector = Biselect.index(key) as any
+    return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
+  }
+
+  choose = <C extends B>(pred: (b: B) => b is C) =>
+    this.compose(Biselect.choose<B, C>(pred))
+
+  combine = <K extends string, B2, P2>(k: K, other: Selector<A, B2, P2>): Selector<A, B & { [KK in K]: B2 }, Params & P2> => {
+    const get = other.get as (a: A, p: P2) => B2
+    const set = other.set as (a: A, b: B2, p: P2) => A
+    return new Selector<A, any, Params & P2>(
+      (a, p) => ({ ...this._get(a, p) as any, [k]: get(a, p) }),
+      (a, b, p) => set(this._set(a, b, p), b[k], p))
+  }
+}
 
 export class MaybeSelector<A, B, Params> {
   constructor(private _get: (a: A, params: Params) => B | null, private _set: (a: A, b: B, params: Params) => A) {
@@ -137,6 +150,8 @@ export class MaybeSelector<A, B, Params> {
     this.modify = this._modify as any
     this.merge = this._merge as any
     this.deepMerge = this._deepMerge as any
+    this.prop = this._prop as any
+    this.index = this._index as any
   }
 
   get: {} extends Params
@@ -210,21 +225,26 @@ export class MaybeSelector<A, B, Params> {
 
   prop!: MaybePropOverloads<A, B, Params>
 
-  index!: B extends { [key: string]: infer C } ? IndexOverloads<B, C, Params> : never
-}
+  _prop = (...keys: string[]): any =>
+    this.compose(Biselect.props(...keys) as any)
 
-MaybeSelector.prototype.index = <C>(key: string, ifNone?: C) => {
-  let selector = Biselect.index(key)
-  return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
-}
+  index!: B extends { [key: string]: infer C } ? IndexOverloads<A, C, Params> : never
 
-MaybeSelector.prototype.prop = (...keys: string[]) =>
-  this.compose(Biselect.props(...keys))
+  _index = <C>(key: string, ifNone?: C) => {
+    let selector = Biselect.index(key) as any
+    return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
+  }
+
+  choose = <C extends B>(pred: (b: B) => b is C) =>
+    this.compose(Biselect.choose<B, C>(pred))
+}
 
 export class Converter<A, B, Params> {
   constructor(private _convert: (a: A, params: Params) => B, private _convertBack: (b: B, params: Params) => A) {
     this.convert = _convert as any
     this.convertBack = _convertBack as any
+    this.prop = this._prop as any
+    this.index = this._index as any
   }
   
   convert: {} extends Params
@@ -273,22 +293,27 @@ export class Converter<A, B, Params> {
   invert = () => new Converter<B, A, Params>(this._convertBack, this._convert)
 
   prop!: CertainPropOverloads<A, B, Params>
+  
+  _prop = (...keys: string[]): any =>
+    this.compose(Biselect.props(...keys) as any)
 
-  index!: B extends { [key: string]: infer C } ? IndexOverloads<B, C, Params> : never
+  index!: B extends { [key: string]: infer C } ? IndexOverloads<A, C, Params> : never
+
+  _index = <C>(key: string, ifNone?: C) => {
+    let selector = Biselect.index(key) as any
+    return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
+  }
+
+  choose = <C extends B>(pred: (b: B) => b is C) =>
+    this.compose(Biselect.choose<B, C>(pred))
 }
-
-Converter.prototype.index = <C>(key: string, ifNone?: C) => {
-  let selector = Biselect.index(key)
-  return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
-}
-
-Converter.prototype.prop = (...keys: string[]) =>
-  this.compose(Biselect.props(...keys))
 
 export class MaybeConverter<A, B, Params> {
   constructor(private _convert: (a: A, params: Params) => B | null, private _convertBack: (b: B, params: Params) => A) {
     this.convert = _convert as any
     this.convertBack = _convertBack as any
+    this.prop = this._prop as any
+    this.index = this._index as any
   }
   
   convert: {} extends Params
@@ -336,17 +361,20 @@ export class MaybeConverter<A, B, Params> {
       this._convertBack)
 
   prop!: MaybePropOverloads<A, B, Params>
+  
+  _prop = (...keys: string[]): any =>
+    this.compose(Biselect.props(...keys) as any)
 
-  index!: B extends { [key: string]: infer C } ? IndexOverloads<B, C, Params> : never
+  index!: B extends { [key: string]: infer C } ? IndexOverloads<A, C, Params> : never
+
+  _index = <C>(key: string, ifNone?: C) => {
+    let selector = Biselect.index(key) as any
+    return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
+  }
+
+  choose = <C extends B>(pred: (b: B) => b is C) =>
+    this.compose(Biselect.choose<B, C>(pred))
 }
-
-MaybeConverter.prototype.index = <C>(key: string, ifNone?: C) => {
-  let selector = Biselect.index(key)
-  return this.compose(ifNone !== undefined ? selector.withDefault(ifNone) : selector)
-}
-
-MaybeConverter.prototype.prop = (...keys: string[]) =>
-  this.compose(Biselect.props(...keys))
 
 interface Root<A> {
   index: A extends { [key: string]: infer B } ? IndexOverloads<A, B, {}> : never
@@ -380,4 +408,12 @@ export namespace Biselect {
     new MaybeConverter<A, B, {}>(
       a => typeGuard(a) ? a : null,
       b => b as A)
+
+  export const combine = <A, B, K extends string, P>(k: K, selector: Selector<A, B, P>): Selector<A, { [KK in K]: B }, P> => {
+    const get = selector.get as (a: A, p: P) => B
+    const set = selector.set as (a: A, b: B, p: P) => A
+    return new Selector<A, any, P>(
+      (a, p) => ({ [k]: get(a, p) }),
+      (a, b, p) => set(a, b[k], p))
+  }
 }

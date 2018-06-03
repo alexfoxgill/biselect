@@ -1,16 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import {Biselect, Selector, MaybeSelector, Converter, MaybeConverter, DeepPartial} from './index'
-
-interface Lookup<T> {
-  [key: string]: T
-}
-
-const indexBy = <T>(items: T[], prop: keyof T): Lookup<T> =>
-  items.reduce((acc, x) => {
-    const key = x[prop] as any as string
-    return { ...acc as any, [key]: x }
-  }, {})
+import {indexBy, Lookup} from './util'
 
 namespace Fixture {
   export interface Root {
