@@ -25,7 +25,6 @@ interface TableDocument {
   id: DocumentId
   type: "table"
   name: string
-  updatedBy: UserId
   table: {
     columns: string[],
     rows: string[][]
@@ -36,7 +35,6 @@ interface TextDocument {
   id: DocumentId
   type: "text"
   name: string
-  updatedBy: UserId
   text: string
 }
 
@@ -69,7 +67,6 @@ const todoTextDoc: TextDocument = {
   id: "doc-10239431",
   type: "text",
   name: "todo.txt",
-  updatedBy: aaron.id,
   text: "- implement unit tests\n- publish to npm\n"
 }
 
@@ -77,7 +74,6 @@ const todoTableDoc: TableDocument = {
   id: "doc-12340943",
   type: "table",
   name: "tasks.csv",
-  updatedBy: beatrice.id,
   table: {
     columns: ["task", "status"],
     rows: [
