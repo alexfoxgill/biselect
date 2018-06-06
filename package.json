@@ -11,8 +11,8 @@
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "test-watch": "npm-watch test"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Alex Fox Gill",
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.3",
