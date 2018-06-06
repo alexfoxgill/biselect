@@ -1,17 +1,37 @@
 {
   "name": "biselect",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Two-way selectors for Redux-like applications, TypeScript-first.",
+  "main": "dist/index",
+  "typings": "dist/index",
   "watch": {
     "test": "src/**/*.ts"
   },
   "scripts": {
+    "prepublishOnly": "npm run compile",
+    "compile": "npm run clean && tsc -p .",
+    "watch": "tsc -w -p .",
+    "clean": "rm -rf dist",
     "start": "webpack-cli -w --config webpack.conf.js",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "test-watch": "npm-watch test"
   },
-  "author": "Alex Fox Gill",
+  "bugs": {
+    "url": "http://github.com/alexfoxgill/biselect/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/alexfoxgill/biselect.git"
+  },
+  "keywords": [
+    "redux",
+    "selector",
+    "selectors",
+    "lens",
+    "lenses",
+    "optics"
+  ],
+  "author": "Alex Fox Gill <email@alexfoxgill.com>",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
@@ -26,5 +46,9 @@
     "typescript": "^2.8.3",
     "webpack": "^4.6.0",
     "webpack-cli": "^2.0.15"
-  }
+  },
+  "files": [
+    "dist/index.js",
+    "dist/index.d.ts"
+  ]
 }

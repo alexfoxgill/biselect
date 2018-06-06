@@ -1,5 +1,5 @@
-type DeepPartialObject<A> = { [K in keyof A]?: DeepPartial<A[K]> }
-type DeepPartial<A> = A extends object ? DeepPartialObject<A> : A
+export type DeepPartialObject<A> = { [K in keyof A]?: DeepPartial<A[K]> }
+export type DeepPartial<A> = A extends object ? DeepPartialObject<A> : A
 
 export namespace DeepPartial {
   export const merge = <A>(a: A, someA: DeepPartial<A>): A => {
@@ -13,30 +13,30 @@ export namespace DeepPartial {
   }
 }
 
-type Optic<A, B, Params> =
+export type Optic<A, B, Params> =
   MaybeSelector<A, B, Params>
   | Selector<A, B, Params>
   | MaybeConverter<A, B, Params>
   | Converter<A, B, Params>
 
-type Maybe<A, B, Params> = MaybeSelector<A, B, Params> | MaybeConverter<A, B, Params>
-type Certain<A, B, Params> = Selector<A, B, Params> | Converter<A, B, Params>
-type AnyConverter<A, B, Params> = Converter<A, B, Params> | MaybeConverter<A, B, Params>
-type AnySelector<A, B, Params> = Selector<A, B, Params> | MaybeSelector<A, B, Params>
+export type Maybe<A, B, Params> = MaybeSelector<A, B, Params> | MaybeConverter<A, B, Params>
+export type Certain<A, B, Params> = Selector<A, B, Params> | Converter<A, B, Params>
+export type AnyConverter<A, B, Params> = Converter<A, B, Params> | MaybeConverter<A, B, Params>
+export type AnySelector<A, B, Params> = Selector<A, B, Params> | MaybeSelector<A, B, Params>
 
-interface IndexOverloads<A, B, Params> {
+export interface IndexOverloads<A, B, Params> {
   <K extends string>(key: K):       MaybeSelector<A, B, Params & { [Key in K]: string }>
   <K extends string>(key: K, ifNone: B): Selector<A, B, Params & { [Key in K]: string }>
 }
 
-interface CertainPropOverloads<A, B, Params> {
+export interface CertainPropOverloads<A, B, Params> {
   <K1 extends keyof B>(key: K1): Selector<A, B[K1], Params>
   <K1 extends keyof B, K2 extends keyof B[K1]>(k1: K1, k2: K2): Selector<A, B[K1][K2], Params>
   <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2]>(k1: K1, k2: K2, k3: K3): Selector<B, B[K1][K2][K3], Params>
   <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2], K4 extends keyof B[K1][K2][K3]>(k1: K1, k2: K2, k3: K3): Selector<B, B[K1][K2][K3][K4], Params>
 }
 
-interface MaybePropOverloads<A, B, Params> {
+export interface MaybePropOverloads<A, B, Params> {
   <K1 extends keyof B>(key: K1): MaybeSelector<A, B[K1], Params>
   <K1 extends keyof B, K2 extends keyof B[K1]>(k1: K1, k2: K2): MaybeSelector<A, B[K1][K2], Params>
   <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2]>(k1: K1, k2: K2, k3: K3): MaybeSelector<B, B[K1][K2][K3], Params>
@@ -376,7 +376,7 @@ export class MaybeConverter<A, B, Params> {
     this.compose(Biselect.choose<B, C>(pred))
 }
 
-interface Root<A> {
+export interface Root<A> {
   index: A extends { [key: string]: infer B } ? IndexOverloads<A, B, {}> : never
   prop: CertainPropOverloads<A, A, {}>
   choose<B extends A>(typeGuard: (a: A) => a is B): MaybeConverter<A, B, {}>
