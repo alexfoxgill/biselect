@@ -45,7 +45,7 @@ export interface MaybePropOverloads<A, B, Params> {
 
 export class Selector<A, B, Params extends {} = {}> {
 
-  constructor(private _get: (a: A, params: Params) => B, private _set: (a: A, b: B, params: Params) => A) {
+  constructor(public _get: (a: A, params: Params) => B, public _set: (a: A, b: B, params: Params) => A) {
     this.get = _get as any
     this.set = _set as any
     this.modify = this._modify as any
@@ -67,7 +67,7 @@ export class Selector<A, B, Params extends {} = {}> {
     ? (a: A, f: (b: B) => B) => A
     : (a: A, f: (b: B) => B, params: Params) => A
 
-  private _modify = (a: A, f: (b: B) => B, params: Params): A =>
+  public _modify = (a: A, f: (b: B) => B, params: Params): A =>
     this._set(a, f(this._get(a, params)), params)
 
   merge: B extends object
@@ -97,25 +97,19 @@ export class Selector<A, B, Params extends {} = {}> {
         (a, c, params) => this._modify(a, b => other._set(b, c, params), params))
 
     } else if (other instanceof MaybeSelector) {
-      const getter = other.get as (b: B, params: BCParams) => C | null
-      const setter = other.set as (b: B, c: C, params: BCParams) => B
       return new MaybeSelector<A, C, Params & BCParams>(
-        (a, params) => getter(this._get(a, params), params),
-        (a, c, params) => this._modify(a, b => setter(b, c, params), params))
+        (a, params) => other._get(this._get(a, params), params),
+        (a, c, params) => this._modify(a, b => other._set(b, c, params), params))
 
     } else if (other instanceof Converter) {
-      const convert = other.convert as (b: B, params: BCParams) => C
-      const convertBack = other.convertBack as (c: C, params: BCParams) => B
       return new Selector<A, C, Params & BCParams>(
-        (a, params) => convert(this._get(a, params), params),
-        (a, c, params) => this._set(a, convertBack(c, params), params))
+        (a, params) => other._convert(this._get(a, params), params),
+        (a, c, params) => this._set(a, other._convertBack(c, params), params))
 
     } else if (other instanceof MaybeConverter) {
-      const convert = other.convert as (b: B, params: BCParams) => C | null
-      const convertBack = other.convertBack as (c: C, params: BCParams) => B
       return new MaybeSelector<A, C, Params & BCParams>(
-        (a, params) => convert(this._get(a, params), params),
-        (a, c, params) => this._set(a, convertBack(c, params), params))
+        (a, params) => other._convert(this._get(a, params), params),
+        (a, c, params) => this._set(a, other._convertBack(c, params), params))
     }
   }
 
@@ -135,16 +129,14 @@ export class Selector<A, B, Params extends {} = {}> {
     this.compose(Biselect.choose<B, C>(pred))
 
   combine = <K extends string, B2, P2>(k: K, other: Selector<A, B2, P2>): Selector<A, B & { [KK in K]: B2 }, Params & P2> => {
-    const get = other.get as (a: A, p: P2) => B2
-    const set = other.set as (a: A, b: B2, p: P2) => A
     return new Selector<A, any, Params & P2>(
-      (a, p) => ({ ...this._get(a, p) as any, [k]: get(a, p) }),
-      (a, b, p) => set(this._set(a, b, p), b[k], p))
+      (a, p) => ({ ...this._get(a, p) as any, [k]: other._get(a, p) }),
+      (a, b, p) => other._set(this._set(a, b, p), b[k], p))
   }
 }
 
 export class MaybeSelector<A, B, Params> {
-  constructor(private _get: (a: A, params: Params) => B | null, private _set: (a: A, b: B, params: Params) => A) {
+  constructor(public _get: (a: A, params: Params) => B | null, public _set: (a: A, b: B, params: Params) => A) {
     this.get = _get as any
     this.set = _set as any
     this.modify = this._modify as any
@@ -166,7 +158,7 @@ export class MaybeSelector<A, B, Params> {
     ? (a: A, f: (b: B) => B) => A
     : (a: A, f: (b: B) => B, params: Params) => A
 
-  private _modify(a: A, f: (b: B) => B, params: Params): A {
+  public _modify(a: A, f: (b: B) => B, params: Params): A {
     const b = this._get(a, params)
     return b === null ? a : this._set(a, f(b), params)
   }
@@ -191,24 +183,20 @@ export class MaybeSelector<A, B, Params> {
   
   compose<C, BCParams>(other: Optic<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams> {
     if (other instanceof Selector || other instanceof MaybeSelector) {
-      const getter = other.get as (b: B, params: BCParams) => C | null
-      const setter = other.set as (b: B, c: C, params: BCParams) => B
       return new MaybeSelector<A, C, Params & BCParams>(
         (a, params) => {
           const b = this._get(a, params)
-          return b === null ? null : getter(b, params)
+          return b === null ? null : other._get(b, params)
         },
-        (a, c, params) => this._modify(a, b => setter(b, c, params), params))
+        (a, c, params) => this._modify(a, b => other._set(b, c, params), params))
 
     } else if (other instanceof Converter || other instanceof MaybeConverter) {
-      const convert = other.convert as (b: B, params: BCParams) => C | null
-      const convertBack = other.convertBack as (c: C, params: BCParams) => B
       return new MaybeSelector<A, C, Params & BCParams>(
         (a, params) => {
           const b = this._get(a, params)
-          return b === null ? null : convert(b, params)
+          return b === null ? null : other._convert(b, params)
         },
-        (a, c, params) => this._set(a, convertBack(c, params), params))
+        (a, c, params) => this._set(a, other._convertBack(c, params), params))
 
     } else {
       throw new Error(`Unexpected argument: ${other}`)
@@ -240,7 +228,7 @@ export class MaybeSelector<A, B, Params> {
 }
 
 export class Converter<A, B, Params> {
-  constructor(private _convert: (a: A, params: Params) => B, private _convertBack: (b: B, params: Params) => A) {
+  constructor(public _convert: (a: A, params: Params) => B, public _convertBack: (b: B, params: Params) => A) {
     this.convert = _convert as any
     this.convertBack = _convertBack as any
     this.prop = this._prop as any
@@ -261,32 +249,24 @@ export class Converter<A, B, Params> {
   compose<C, BCParams>(other: Converter<B, C, BCParams>): Converter<A, C, Params & BCParams>
   compose<C, BCParams>(other: Optic<B, C, BCParams>) {
     if (other instanceof MaybeSelector) {
-      const getter = other.get as (b: B, params: BCParams) => C | null
-      const setter = other.set as (b: B, c: C, params: BCParams) => B
       return new MaybeSelector<A, C, Params & BCParams>(
-        (a, params) => getter(this._convert(a, params), params),
-        (a, c, params) => this._convertBack(setter(this._convert(a, params), c, params), params))
+        (a, params) => other._get(this._convert(a, params), params),
+        (a, c, params) => this._convertBack(other._set(this._convert(a, params), c, params), params))
 
     } else if (other instanceof Selector) {
-      const getter = other.get as (b: B, params: BCParams) => C
-      const setter = other.set as (b: B, c: C, params: BCParams) => B
       return new Selector<A, C, Params & BCParams>(
-        (a, params) => getter(this._convert(a, params), params),
-        (a, c, params) => this._convertBack(setter(this._convert(a, params), c, params), params))
+        (a, params) => other._get(this._convert(a, params), params),
+        (a, c, params) => this._convertBack(other._set(this._convert(a, params), c, params), params))
 
     } else if (other instanceof MaybeConverter) {
-      const convert = other.convert as (b: B, params: BCParams) => C | null
-      const convertBack = other.convertBack as (c: C, params: BCParams) => B
       return new MaybeConverter<A, C, Params & BCParams>(
-        (a, params) => convert(this._convert(a, params), params),
-        (c, params) => this._convertBack(convertBack(c, params), params))
+        (a, params) => other._convert(this._convert(a, params), params),
+        (c, params) => this._convertBack(other._convertBack(c, params), params))
 
     } else if (other instanceof Converter) {
-      const convert = other.convert as (b: B, params: BCParams) => C
-      const convertBack = other.convertBack as (c: C, params: BCParams) => B
       return new Converter<A, C, Params & BCParams>(
-        (a, params) => convert(this._convert(a, params), params),
-        (c, params) => this._convertBack(convertBack(c, params), params))
+        (a, params) => other._convert(this._convert(a, params), params),
+        (c, params) => this._convertBack(other._convertBack(c, params), params))
     }
   }
 
@@ -309,7 +289,7 @@ export class Converter<A, B, Params> {
 }
 
 export class MaybeConverter<A, B, Params> {
-  constructor(private _convert: (a: A, params: Params) => B | null, private _convertBack: (b: B, params: Params) => A) {
+  constructor(public _convert: (a: A, params: Params) => B | null, public _convertBack: (b: B, params: Params) => A) {
     this.convert = _convert as any
     this.convertBack = _convertBack as any
     this.prop = this._prop as any
@@ -328,16 +308,14 @@ export class MaybeConverter<A, B, Params> {
   compose<C, BCParams>(other: AnyConverter<B, C, BCParams>): MaybeConverter<A, C, Params & BCParams>
   compose<C, BCParams>(other: Optic<B, C, BCParams>) {
     if (other instanceof MaybeSelector || other instanceof Selector) {
-      const getter = other.get as (b: B, params: BCParams) => C | null
-      const setter = other.set as (b: B, c: C, params: BCParams) => B
       return new MaybeSelector<A, C, Params & BCParams>(
         (a, params) => {
           const b = this._convert(a, params)
-          return b === null ? null : getter(b, params)
+          return b === null ? null : other._get(b, params)
         },
         (a, c, params) => {
           const b = this._convert(a, params)
-          return b === null ? a : this._convertBack(setter(b, c, params), params)
+          return b === null ? a : this._convertBack(other._set(b, c, params), params)
         })
 
     } else if (other instanceof MaybeConverter || other instanceof Converter) {
