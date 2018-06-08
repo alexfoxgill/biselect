@@ -21,6 +21,9 @@ export interface MaybeConverter<A, B, Params extends {}> {
 }
 
 export namespace MaybeConverter {
+  export const fromGets = <A, B, Params>(get: (a: A, p: Params) => B | null, reverseGet: (b: B, p: Params) => A) =>
+    create(Get.create(get), Get.create(reverseGet))
+
   export const wrapSet = <A, B, C, ABParams, BCParams>(get: Get<A, B | null, ABParams>, reverseGet: Get<B, A, ABParams>, set: Set<B, C, BCParams>) =>
     Set.create<A, C, ABParams & BCParams>((a, p, c) => {
       const b = get._actual(a, p)

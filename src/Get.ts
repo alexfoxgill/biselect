@@ -3,6 +3,7 @@ import { MaybeSelector } from './MaybeSelector'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
+import { GetPropOverloads, Prop } from './Prop'
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -23,6 +24,7 @@ export type Get<A, B, Params extends {}> = GetSignature<A, B, Params> & {
 
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B) => C) => Get<A, C, Params>
+  prop: GetPropOverloads<A, B, Params>
 }
 
 export namespace Get {
@@ -45,6 +47,8 @@ export namespace Get {
 
     clone.map = <C>(f: (b: B) => C): Get<A, C, Params> =>
       Get.create((a, p) => f(clone(a, p)))
+
+    clone.prop = Prop.implementation(clone.compose)
 
     return clone as Get<A, B, Params>
   }

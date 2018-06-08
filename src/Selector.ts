@@ -5,7 +5,7 @@ import { MaybeSelector } from './MaybeSelector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
 import { Optic } from './Optic'
-import { CertainPropOverloads, Prop } from './Prop'
+import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
 import { Choose } from './Choose';
 
@@ -23,12 +23,15 @@ export type Selector<A, B, Params extends {}> = {
   set: Set<A, B, Params>
   modify: Modify<A, B, Params>
   compose: SelectorCompose<A, B, Params>
-  prop: CertainPropOverloads<A, B, Params>
+  prop: SelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
 }
 
 export namespace Selector {
+  export const fromGetSet = <A, B, Params>(get: (a: A, p: Params) => B, set: (a: A, p: Params, b: B) => A) =>
+    create(Get.create(get), Set.create(set))
+
   export const create = <A, B, Params extends {}>(get: Get<A, B, Params>, set: Set<A, B, Params>): Selector<A, B, Params> => {
     const modify = Modify.fromGetSet(get, set)
 

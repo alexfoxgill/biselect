@@ -3,14 +3,21 @@ import { MaybeSelector } from './MaybeSelector'
 import { Get } from './Get'
 import { Set } from './Set'
 
-export interface CertainPropOverloads<A, B, Params> {
+export interface GetPropOverloads<A, B, Params> {
+  <K1 extends keyof B>(key: K1): Get<A, B[K1], Params>
+  <K1 extends keyof B, K2 extends keyof B[K1]>(k1: K1, k2: K2): Get<A, B[K1][K2], Params>
+  <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2]>(k1: K1, k2: K2, k3: K3): Get<B, B[K1][K2][K3], Params>
+  <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2], K4 extends keyof B[K1][K2][K3]>(k1: K1, k2: K2, k3: K3): Get<B, B[K1][K2][K3][K4], Params>
+}
+
+export interface SelectorPropOverloads<A, B, Params> {
   <K1 extends keyof B>(key: K1): Selector<A, B[K1], Params>
   <K1 extends keyof B, K2 extends keyof B[K1]>(k1: K1, k2: K2): Selector<A, B[K1][K2], Params>
   <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2]>(k1: K1, k2: K2, k3: K3): Selector<B, B[K1][K2][K3], Params>
   <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2], K4 extends keyof B[K1][K2][K3]>(k1: K1, k2: K2, k3: K3): Selector<B, B[K1][K2][K3][K4], Params>
 }
 
-export interface MaybePropOverloads<A, B, Params> {
+export interface MaybeSelectorPropOverloads<A, B, Params> {
   <K1 extends keyof B>(key: K1): MaybeSelector<A, B[K1], Params>
   <K1 extends keyof B, K2 extends keyof B[K1]>(k1: K1, k2: K2): MaybeSelector<A, B[K1][K2], Params>
   <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2]>(k1: K1, k2: K2, k3: K3): MaybeSelector<B, B[K1][K2][K3], Params>

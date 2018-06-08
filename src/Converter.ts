@@ -21,6 +21,9 @@ export interface Converter<A, B, Params extends {}> {
 }
 
 export namespace Converter {
+  export const fromGets = <A, B, Params>(get: (a: A, p: Params) => B, reverseGet: (b: B, p: Params) => A) =>
+    create(Get.create(get), Get.create(reverseGet))
+
   export const wrapSet = <A, B, C, ABParams, BCParams>(get: Get<A, B, ABParams>, reverseGet: Get<B, A, ABParams>, set: Set<B, C, BCParams>) =>
     Set.create<A, C, ABParams & BCParams>((a, p, c) => reverseGet._actual(set._actual(get._actual(a, p), p, c), p))
 

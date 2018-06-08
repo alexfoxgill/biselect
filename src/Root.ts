@@ -1,11 +1,11 @@
 import { IndexBy } from "./IndexBy";
-import { CertainPropOverloads, Prop } from "./Prop";
+import { SelectorPropOverloads, Prop } from "./Prop";
 import { MaybeConverter } from "./MaybeConverter";
 import { Choose } from "./Choose";
 
 export interface Root<A> {
   indexBy: IndexBy<A, A, {}>
-  prop: CertainPropOverloads<A, A, {}>
+  prop: SelectorPropOverloads<A, A, {}>
   choose<B extends A>(typeGuard: (a: A) => a is B): MaybeConverter<A, B, {}>
 }
 
