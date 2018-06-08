@@ -18,7 +18,7 @@ export interface MaybePropOverloads<A, B, Params> {
 }
 
 export namespace Prop {
-  const many = (...keys: string[]) => keys.map(create).reduce((a, b) => a.compose(b))
+  export const many = (...keys: string[]) => keys.map(create).reduce((a, b) => a.compose(b))
 
   export const create = <A, K1 extends keyof A>(key: K1): Selector<A, A[K1], {}> =>
     Selector.create(Get.create(a => a[key]), Set.create((a, b) => ({ ...a as any, [key]: b })))
