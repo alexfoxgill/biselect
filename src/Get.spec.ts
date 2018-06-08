@@ -17,11 +17,11 @@ describe("Get", () => {
     expect(result).to.equal("1")
   })
 
-  it("requires a param argument when Params is not empty", () => {
-    const get = Get.create<number, string, { param: string }>(num => num.toString())
-    const result = get(1, { param: "" })
+  it("requires and uses a param argument when Params is not empty", () => {
+    const get = Get.create<number, string, { append: string }>((num, param) => num.toString() + param.append)
+    const result = get(1, { append: "0" })
 
-    expect(result).to.equal("1")
+    expect(result).to.equal("10")
   })
 
   it("can map the result", () => {
