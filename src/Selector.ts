@@ -7,6 +7,7 @@ import { Converter } from './Converter'
 import { Optic } from './Optic'
 import { CertainPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
+import { Choose } from './Choose';
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -24,6 +25,7 @@ export type Selector<A, B, Params extends {}> = {
   compose: SelectorCompose<A, B, Params>
   prop: CertainPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
+  choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
 }
 
 export namespace Selector {
@@ -47,6 +49,7 @@ export namespace Selector {
 
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
+    const choose = Choose.implementation(compose)
 
     return {
       type: "selector",
@@ -55,7 +58,8 @@ export namespace Selector {
       modify,
       compose,
       prop,
-      indexBy
+      indexBy,
+      choose
     }
   }
 }

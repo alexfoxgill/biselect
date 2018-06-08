@@ -7,6 +7,7 @@ import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
 import { MaybePropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy'
+import { Choose } from './Choose';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -24,6 +25,7 @@ export type MaybeSelector<A, B, Params extends {}> = {
   compose: MaybeSelectorCompose<A, B, Params>
   prop: MaybePropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
+  choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
 }
 
 export namespace MaybeSelector {
@@ -48,6 +50,7 @@ export namespace MaybeSelector {
     
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
+    const choose = Choose.implementation(compose)
 
     return {
       type: "maybeSelector",
@@ -56,7 +59,8 @@ export namespace MaybeSelector {
       modify,
       compose,
       prop,
-      indexBy
+      indexBy,
+      choose
     }
   }
 }
