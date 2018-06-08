@@ -33,6 +33,18 @@ describe("Get", () => {
     expect(result).to.equal("1")
   })
 
+  it("composes with Get", () => {
+    interface Foo { bar: Bar }
+    interface Bar { qux: number }
+
+    const get = Get.create((foo: Foo) => foo.bar)
+      .compose(Get.create((bar: Bar) => bar.qux))
+
+    const result = get({ bar: { qux: 1 } })
+    
+    expect(result).to.equal(1)
+  })
+
   it("composes with Selector", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
