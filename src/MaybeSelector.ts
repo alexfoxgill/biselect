@@ -5,6 +5,8 @@ import { Optic } from './Optic'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
+import { MaybePropOverloads, Prop } from './Prop'
+import { IndexBy } from './IndexBy'
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -20,6 +22,8 @@ export type MaybeSelector<A, B, Params extends {}> = {
   set: Set<A, B, Params>
   modify: Modify<A, B, Params>
   compose: MaybeSelectorCompose<A, B, Params>
+  prop: MaybePropOverloads<A, B, Params>
+  indexBy: IndexBy<A, B, Params>
 }
 
 export namespace MaybeSelector {
@@ -41,6 +45,18 @@ export namespace MaybeSelector {
       }
     }
 
-    return { type: "maybeSelector", get, set, modify, compose }
+    
+    const prop = Prop.implementation(compose)
+    const indexBy = IndexBy.implementation(compose)
+
+    return {
+      type: "maybeSelector",
+      get,
+      set,
+      modify,
+      compose,
+      prop,
+      indexBy
+    }
   }
 }
