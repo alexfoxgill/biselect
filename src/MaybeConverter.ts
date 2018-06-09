@@ -2,7 +2,7 @@ import {Optic} from './Optic'
 import {MaybeSelector} from './MaybeSelector'
 import {Selector} from './Selector'
 import {Converter} from './Converter'
-import {Get} from './Get'
+import {Get, GetSignature} from './Get'
 import {Set} from './Set'
 
 export interface MaybeConverterCompose<A, B, Params> {
@@ -18,6 +18,8 @@ export interface MaybeConverter<A, B, Params extends {}> {
   get: Get<A, B | null, Params>
   reverseGet: Get<B, A, Params>
   compose: MaybeConverterCompose<A, B, Params>
+  withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Converter<A, B, Params>
+  withDefaultValue: (ifNull: B) => Converter<A, B, Params>
 }
 
 export namespace MaybeConverter {
@@ -49,7 +51,21 @@ export namespace MaybeConverter {
           return create(Get.composeMaybe(get, other.get), other.reverseGet.compose(reverseGet))
       }
     }
-    return { type: "maybeConverter", get, reverseGet, compose }
+
+    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Converter<A, B, Params> =>
+      Converter.create(Get.create<A, B, Params>(ifNull), reverseGet)
+
+    const withDefaultValue = (ifNull: B): Converter<A, B, Params> =>
+      withDefault(Get.create<A, B, Params>(_ => ifNull))
+
+    return {
+      type: "maybeConverter",
+      get,
+      reverseGet,
+      compose,
+      withDefault,
+      withDefaultValue
+    }
   }
 }
 

@@ -26,7 +26,33 @@ describe("MaybeConverter", () => {
     const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
 
     const result = converter.reverseGet(1)
-    expect(result).to.deep.equal("1")
+    expect(result).to.equal("1")
+  })
+
+  describe(".withDefault[Value]()", () => {
+    it("returns the default if null is found", () => {
+      const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+        .withDefaultValue(1)
+
+      const result = converter.get("two")
+      expect(result).to.equal(1)
+    })
+    
+    it("calls the provided default function with the correc arguments if null is found", () => {
+      const converter = MaybeConverter.fromGets<string, number, { param: number }>(parseNum, num => num.toString())
+        .withDefault((str, { param }) => str.length + param)
+
+      const result = converter.get("two", { param: 2 })
+      expect(result).to.equal(5)
+    })
+
+    it("can use a Get", () => {
+      const converter = MaybeConverter.fromGets<string, number, { param: number }>(parseNum, num => num.toString())
+        .withDefault(Get.create((str, { param }) => str.length + param))
+
+      const result = converter.get("two", { param: 2 })
+      expect(result).to.equal(5)
+    })
   })
   
   it("composes with Get", () => {
