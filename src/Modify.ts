@@ -35,13 +35,15 @@ export type Modify<A, B, Params extends {}> = ModifySignature<A, B, Params> & {
 }
 
 export namespace Modify {
-  export const create = <A, B, Params extends {}>(modify: (a: A, p: Params, f: (b: B) => B) => A) => {
-    const clone: any = function(a: A, p: any, f: any) {
-      if (arguments.length == 2) {
-        return clone(a, undefined, p)
-      }
-      return modify(a, p, f)
+  const normaliseArgs = <A, P, F>(modify: (a: A, p: P, f: F) => A) =>
+    function(a: A, p: P, f: F) {
+      return arguments.length === 2
+        ? modify(a, undefined as any, p as any)
+        : modify(a, p, f)
     }
+
+  export const create = <A, B, Params extends {}>(modify: (a: A, p: Params, f: (b: B) => B) => A) => {
+    const clone: any = normaliseArgs(modify)
 
     clone.type = "modify"
     clone._actual = clone
@@ -54,11 +56,11 @@ export namespace Modify {
       }
     }
 
-    clone.merge =  (a: A, params: Params, someB: Partial<B>): A =>
-      clone._actual(a, params, (b: B) => ({ ...b as any, ...someB as any }))
+    clone.merge = normaliseArgs((a: A, params: Params, someB: Partial<B>): A =>
+      clone(a, params, (b: B) => ({ ...b as any, ...someB as any })))
   
-    clone.deepMerge = (a: A, someB: DeepPartial<B>, params: Params): A =>
-      clone._actual(a, params, (b: B) => DeepPartial.merge(b, someB))
+    clone.deepMerge = normaliseArgs((a: A, params: Params, someB: DeepPartial<B>): A =>
+      clone(a, params, (b: B) => DeepPartial.merge(b, someB)))
 
     return clone as Modify<A, B, Params>
   }
