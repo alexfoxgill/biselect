@@ -1,5 +1,5 @@
 import { MaybeSelector } from "./MaybeSelector";
-import { Selector } from ".";
+import { Selector } from "./Selector";
 import { Get } from "./Get";
 import { Set } from "./Set";
 
