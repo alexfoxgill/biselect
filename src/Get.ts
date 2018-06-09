@@ -56,6 +56,6 @@ export namespace Get {
   export const composeMaybe = <A, B, C, ABParams, BCParams>(ab: Get<A, B | null, ABParams>, bc: Get<B, C, BCParams>): Get<A, C | null, ABParams & BCParams> =>
     Get.create<A, C | null, ABParams & BCParams>((a, p) => {
       const b = ab._actual(a, p)
-      return b === null ? null : bc._actual(b, p)
+      return b === null || b === undefined ? null : bc._actual(b, p)
     })
 }

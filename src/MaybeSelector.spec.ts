@@ -42,6 +42,14 @@ describe("MaybeSelector", () => {
   })
 
   describe(".withDefault[Value]()", () => {
+    it("ignores the default if the value is found", () => {
+      const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+        .withDefaultValue(1)
+
+      const result = selector.get([2])
+      expect(result).to.equal(2)
+    })
+    
     it("returns the default if null is found", () => {
       const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
         .withDefaultValue(1)

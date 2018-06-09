@@ -53,7 +53,6 @@ export namespace MaybeSelector {
           return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet))
       }
     }
-
     
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
@@ -61,8 +60,13 @@ export namespace MaybeSelector {
     const merge = modify.merge
     const deepMerge = modify.deepMerge
 
-    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> =>
-      Selector.create(Get.create<A, B, Params>(ifNull), set)
+    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> => {
+      const ifNullGet = Get.create<A, B, Params>(ifNull)
+      return Selector.create<A, B, Params>(Get.create((a, p) => {
+        const b = get._actual(a, p)
+        return b === null || b === undefined ? ifNullGet._actual(a, p): b
+      }), set)
+    }
 
     const withDefaultValue = (ifNull: B): Selector<A, B, Params> =>
       withDefault(Get.create<A, B, Params>(_ => ifNull))

@@ -52,8 +52,13 @@ export namespace MaybeConverter {
       }
     }
 
-    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Converter<A, B, Params> =>
-      Converter.create(Get.create<A, B, Params>(ifNull), reverseGet)
+    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Converter<A, B, Params> => {
+      const ifNullGet = Get.create<A, B, Params>(ifNull)
+      return Converter.create<A, B, Params>(Get.create((a, p) => {
+        const b = get._actual(a, p)
+        return b === null || b === undefined ? ifNullGet._actual(a, p): b
+      }), reverseGet)
+    }
 
     const withDefaultValue = (ifNull: B): Converter<A, B, Params> =>
       withDefault(Get.create<A, B, Params>(_ => ifNull))

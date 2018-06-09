@@ -71,6 +71,6 @@ export namespace Modify {
   export const fromMaybeGetSet = <A, B, Params extends {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>): Modify<A, B, Params> =>
     create((a, p, f) => {
       const b = get._actual(a, p)
-      return b === null ? a : set._actual(a, p, f(b))
+      return b === null || b === undefined ? a : set._actual(a, p, f(b))
     })
 }

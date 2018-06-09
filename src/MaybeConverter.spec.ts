@@ -30,6 +30,14 @@ describe("MaybeConverter", () => {
   })
 
   describe(".withDefault[Value]()", () => {
+    it("ignores the default if the value is found", () => {
+      const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+        .withDefaultValue(1)
+
+      const result = converter.get("2")
+      expect(result).to.equal(2)
+    })
+
     it("returns the default if null is found", () => {
       const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
         .withDefaultValue(1)
