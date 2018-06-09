@@ -1,6 +1,6 @@
 import { Get } from './Get'
 import { Set } from './Set'
-import { Modify } from './Modify'
+import { Modify, Merge, DeepMerge } from './Modify'
 import { Optic } from './Optic'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
@@ -26,6 +26,8 @@ export type MaybeSelector<A, B, Params extends {}> = {
   prop: MaybeSelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
+  merge: Merge<A, B, Params>
+  deepMerge: DeepMerge<A, B, Params>
 }
 
 export namespace MaybeSelector {
@@ -54,6 +56,8 @@ export namespace MaybeSelector {
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
     const choose = Choose.implementation(compose)
+    const merge = modify.merge
+    const deepMerge = modify.deepMerge
 
     return {
       type: "maybeSelector",
@@ -63,7 +67,9 @@ export namespace MaybeSelector {
       compose,
       prop,
       indexBy,
-      choose
+      choose,
+      merge,
+      deepMerge
     }
   }
 }

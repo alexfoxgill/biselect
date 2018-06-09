@@ -1,6 +1,6 @@
 import { Get } from './Get'
 import { Set } from './Set'
-import { Modify } from './Modify'
+import { Modify, DeepMerge, Merge } from './Modify'
 import { MaybeSelector } from './MaybeSelector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
@@ -26,6 +26,8 @@ export type Selector<A, B, Params extends {}> = {
   prop: SelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
+  merge: Merge<A, B, Params>
+  deepMerge: DeepMerge<A, B, Params>
 }
 
 export namespace Selector {
@@ -53,6 +55,8 @@ export namespace Selector {
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
     const choose = Choose.implementation(compose)
+    const merge = modify.merge
+    const deepMerge = modify.deepMerge
 
     return {
       type: "selector",
@@ -62,7 +66,9 @@ export namespace Selector {
       compose,
       prop,
       indexBy,
-      choose
+      choose,
+      merge,
+      deepMerge
     }
   }
 }
