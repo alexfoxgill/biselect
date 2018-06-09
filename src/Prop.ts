@@ -28,7 +28,7 @@ export namespace Prop {
   export const many = (...keys: string[]) => keys.map(create).reduce((a, b) => a.compose(b))
 
   export const create = <A, K1 extends keyof A>(key: K1): Selector<A, A[K1], {}> =>
-    Selector.create(Get.create(a => a[key]), Set.create((a, b) => ({ ...a as any, [key]: b })))
+    Selector.create(Get.create(a => a[key]), Set.create((a, p, b) => ({ ...a as any, [key]: b })))
 
   export const implementation = (compose: (prop: any) => any): any =>
     (...keys: string[]) => compose(many(...keys))

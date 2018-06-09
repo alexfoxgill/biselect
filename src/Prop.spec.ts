@@ -7,7 +7,7 @@ describe("Prop", () => {
     interface Foo { bar: number }
     const selector = Prop.create<Foo, 'bar'>('bar')
 
-    const result = selector.get({ bar: 1 })
-    expect(result).to.equal(1)
+    const result = selector.modify({ bar: 1 }, x => x + 1)
+    expect(result).to.deep.equal({ bar: 2 })
   })
 })
