@@ -6,7 +6,7 @@ import {indexBy, Lookup} from './util'
 type UserId = string
 type DocumentId = string
 
-interface Root {
+interface Domain {
   users: { [userId: string]: User }
   documents: { [docId: string]: Doc }
   permissions: {
@@ -85,7 +85,7 @@ const todoTableDoc: TableDocument = {
 
 const documents = [todoTextDoc, todoTableDoc]
 
-const root: Root = {
+const root: Domain = {
   users: indexBy(users, 'id'),
   documents: indexBy(documents, 'id'),
   permissions: {
@@ -98,16 +98,15 @@ const root: Root = {
   }
 }
 
-
 describe("Users/Documents scenario", () => {
-  const fromRoot = Biselect.from<Root>()
-  const userSelector = fromRoot.prop('users').index('userId')
-  const docSelector = fromRoot.prop('documents').index('docId')
-  const permissionSelector = fromRoot.prop('permissions').index('userId', {}).index('docId', [])
+  const fromRoot = Biselect.from<Domain>()
+  const userSelector = fromRoot.prop('users').indexBy('userId')
+  const docSelector = fromRoot.prop('documents').indexBy('docId')
+  const permissionSelector = fromRoot.prop('permissions').indexBy('userId').withDefaultValue({}).indexBy('docId').withDefaultValue([])
   const docNameSelector = docSelector.prop('name')
 
   it("adds a permission", () => {
-    const result = permissionSelector.modify(root, list => [...list, Permission.Read], { userId: aaron.id, docId: todoTableDoc.id })
+    const result = permissionSelector.modify(root, { userId: aaron.id, docId: todoTableDoc.id }, list => [...list, Permission.Read])
 
     const permissions = result.permissions[aaron.id][todoTableDoc.id]
 
@@ -122,8 +121,9 @@ describe("Users/Documents scenario", () => {
 
   it("updates a document", () => {
     const partialUpdate = { name: "done.txt", text: "all finished" }
-    const updatedRoot = docSelector.choose(Doc.isText).merge(root, partialUpdate, { docId: todoTextDoc.id })
+    const updatedRoot = docSelector.choose(Doc.isText).merge(root, { docId: todoTextDoc.id }, partialUpdate)
 
+    console.log(updatedRoot)
     const updatedDoc = updatedRoot.documents[todoTextDoc.id]
 
     expect(updatedDoc).to.deep.equal({ ...todoTextDoc, ...partialUpdate })
@@ -134,11 +134,11 @@ describe("Users/Documents scenario", () => {
     const docId = todoTextDoc.id
     const userId = beatrice.id
 
-    const selector = Biselect
-      .combine("permissions", permissionSelector)
-      .combine("docName", docNameSelector.withDefault(""))
+    const selector = Biselect.combine<Domain>()
+      .add("permissions", permissionSelector)
+      .add("docName", docNameSelector.withDefaultValue(""))
 
-    const updatedRoot = selector.modify(root, ({permissions, docName}) => ({ permissions: [...permissions, permission], docName: "edited-" + docName }), { userId, docId })
+    const updatedRoot = selector.modify(root, { userId, docId }, ({permissions, docName}) => ({ permissions: [...permissions, permission], docName: "edited-" + docName }))
 
     const updatedDocName = updatedRoot.documents[docId].name
     const updatedPermissions = updatedRoot.permissions[userId][docId]
