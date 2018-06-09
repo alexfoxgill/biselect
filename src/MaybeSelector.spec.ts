@@ -41,6 +41,39 @@ describe("MaybeSelector", () => {
     expect(nullResult).to.deep.equal({ bar: null })
   })
 
+  describe(".withDefault[Value]()", () => {
+    it("returns the default if null is found", () => {
+      const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+        .withDefaultValue(1)
+
+      const result = selector.get([])
+      expect(result).to.equal(1)
+    })
+    
+    it("calls the provided default function with the correc arguments if null is found", () => {
+      const selector = MaybeSelector.fromGetSet<number[], number, { param: number }>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+        .withDefault((list, { param }) => param)
+
+      const result = selector.get([], { param: 1 })
+      expect(result).to.equal(1)
+    })
+
+    it("can use a Get", () => {
+      const selector = MaybeSelector.fromGetSet<number[], number, { param: number }>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+        .withDefault(Get.create((list, { param }) => param))
+
+      const result = selector.get([], { param: 1 })
+      expect(result).to.equal(1)
+    })
+
+    it("modifies the default value", () => {
+      const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+        .withDefaultValue(1)
+
+      const result = selector.modify([], x => x + 1)
+      expect(result).to.deep.equal([2])
+    })
+  })
 
   it("composes with Get", () => {
     interface Foo { bar: Bar | null }

@@ -1,4 +1,4 @@
-import { Get } from './Get'
+import { Get, GetSignature } from './Get'
 import { Set } from './Set'
 import { Modify, Merge, DeepMerge } from './Modify'
 import { Optic } from './Optic'
@@ -28,6 +28,8 @@ export type MaybeSelector<A, B, Params extends {}> = {
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
+  withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Selector<A, B, Params>
+  withDefaultValue: (ifNull: B) => Selector<A, B, Params>
 }
 
 export namespace MaybeSelector {
@@ -59,6 +61,12 @@ export namespace MaybeSelector {
     const merge = modify.merge
     const deepMerge = modify.deepMerge
 
+    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> =>
+      Selector.create(Get.create<A, B, Params>(ifNull), set)
+
+    const withDefaultValue = (ifNull: B): Selector<A, B, Params> =>
+      withDefault(Get.create<A, B, Params>(_ => ifNull))
+
     return {
       type: "maybeSelector",
       get,
@@ -69,7 +77,9 @@ export namespace MaybeSelector {
       indexBy,
       choose,
       merge,
-      deepMerge
+      deepMerge,
+      withDefault,
+      withDefaultValue
     }
   }
 }
