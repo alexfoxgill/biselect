@@ -88,17 +88,15 @@ describe("MaybeSelector", () => {
   })
 
   it("composes with Converter", () => {
-    interface Foo { bar: Bar | null }
-    interface Bar { qux: number }
-    interface Sha { pow: number }
+    interface Foo { bar: string | null }
 
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(Converter.fromGets<Bar, Sha, {}>(bar => ({ pow: bar.qux }), sha => ({ qux: sha.pow })))
+    const maybeSelector = MaybeSelector.fromGetSet<Foo, string, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(Converter.fromGets<string, string[], {}>(str => str.split(''), list => list.join('')))
 
-    const result = maybeSelector.modify({ bar: { qux: 1 } }, sha => ({ pow: sha.pow + 1 }))
-    expect(result).to.deep.equal({ bar: { qux: 2 } })
+    const result = maybeSelector.modify({ bar: "foo" }, str => str.reverse())
+    expect(result).to.deep.equal({ bar: "oof" })
     
-    const nullResult = maybeSelector.modify({ bar: null }, sha => ({ pow: sha.pow + 1 }))
+    const nullResult = maybeSelector.modify({ bar: null }, str => str.reverse())
     expect(nullResult).to.deep.equal({ bar: null })
   })
 
