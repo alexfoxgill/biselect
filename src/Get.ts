@@ -21,7 +21,7 @@ export interface GetCompose<A, B, Params> {
 
 export type Get<A, B, Params extends {}> = GetSignature<A, B, Params> & {
   type: "get"
-  _actual: (a: A, params: Params) => B
+  _underlying: (a: A, params: Params) => B
   extend: (ext: Extension) => Get<A, B, Params>
 
   compose: GetCompose<A, B, Params>
@@ -31,9 +31,9 @@ export type Get<A, B, Params extends {}> = GetSignature<A, B, Params> & {
 
 export namespace Get {
   export const create = <A, B, Params extends {}>(get: (a: A, p: Params) => B, ext: Extension = Extension.none): Get<A, B, Params> => {
-    const clone: any = (a: A, p: Params) => get(a, p)
+    const clone: any = (...args: any[]) => clone._underlying(...args)
     clone.type = "get"
-    clone._actual = clone
+    clone._underlying = (a: A, p: Params) => get(a, p)
     
     clone.extend = (newExtension: Extension) => 
       create(get, Extension.combine(ext, newExtension))
@@ -41,7 +41,7 @@ export namespace Get {
     clone.compose = <C, BCParams extends {}>(other: Composable<B, C, BCParams>) => {
       switch (other.type) {
         case "get":
-          return Get.create<A, C, Params & BCParams>((a, p) => other._actual(clone(a, p), p), ext)
+          return Get.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
         case "maybeSelector":
         case "selector":
         case "maybeConverter":
@@ -62,7 +62,7 @@ export namespace Get {
 
   export const composeMaybe = <A, B, C, ABParams, BCParams>(ab: Get<A, B | null, ABParams>, bc: Get<B, C, BCParams>): Get<A, C | null, ABParams & BCParams> =>
     Get.create<A, C | null, ABParams & BCParams>((a, p) => {
-      const b = ab._actual(a, p)
-      return b === null || b === undefined ? null : bc._actual(b, p)
+      const b = ab._underlying(a, p)
+      return b === null || b === undefined ? null : bc._underlying(b, p)
     })
 }

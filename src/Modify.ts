@@ -29,7 +29,7 @@ export type DeepMerge<A, B, Params extends {}> =
 
 export type Modify<A, B, Params extends {}> = ModifySignature<A, B, Params> & {
   type: "modify"
-  _actual: (a: A, params: Params, f: (b: B) => B) => A
+  _underlying: (a: A, params: Params, f: (b: B) => B) => A
   extend: (ext: Extension) => Modify<A, B, Params>
 
   compose: ModifyCompose<A, B, Params>
@@ -46,16 +46,16 @@ export namespace Modify {
     }
 
   export const create = <A, B, Params extends {}>(modify: (a: A, p: Params, f: (b: B) => B) => A, ext: Extension = Extension.none) => {
-    const clone: any = normaliseArgs(modify)
-
+    const clone: any = (...args: any[]) => clone._underlying(...args)
     clone.type = "modify"
-    clone._actual = clone
+    clone._underlying = normaliseArgs(modify)
+
     clone.compose = <C, BCParams>(other: Modify<B, C, BCParams> | Set<B, C, BCParams>) => {
       switch(other.type) {
         case "modify":
-          return create<A, C, Params & BCParams>((a, p, f) => clone._actual(a, p, (b: B) => other._actual(b, p, f)))
+          return create<A, C, Params & BCParams>((a, p, f) => clone._underlying(a, p, (b: B) => other._underlying(b, p, f)))
         case "set":
-          return Set.create<A, C, Params & BCParams>((a, p, c) => clone._actual(a, p, (b: B) => other._actual(b, p, c)))
+          return Set.create<A, C, Params & BCParams>((a, p, c) => clone._underlying(a, p, (b: B) => other._underlying(b, p, c)))
       }
     }
 
@@ -74,11 +74,11 @@ export namespace Modify {
   }
 
   export const fromGetSet = <A, B, Params extends {}>(get: Get<A, B, Params>, set: Set<A, B, Params>): Modify<A, B, Params> =>
-    create((a, p, f) => set._actual(a, p, f(get._actual(a, p))))
+    create((a, p, f) => set._underlying(a, p, f(get._underlying(a, p))))
 
   export const fromMaybeGetSet = <A, B, Params extends {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>): Modify<A, B, Params> =>
     create((a, p, f) => {
-      const b = get._actual(a, p)
-      return b === null || b === undefined ? a : set._actual(a, p, f(b))
+      const b = get._underlying(a, p)
+      return b === null || b === undefined ? a : set._underlying(a, p, f(b))
     })
 }

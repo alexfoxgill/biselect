@@ -72,8 +72,8 @@ export namespace MaybeSelector {
     const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> => {
       const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
       return Selector.create<A, B, Params>(Get.create((a, p) => {
-        const b = get._actual(a, p)
-        return b === null || b === undefined ? ifNullGet._actual(a, p): b
+        const b = get._underlying(a, p)
+        return b === null || b === undefined ? ifNullGet._underlying(a, p): b
       }, ext), set, ext)
     }
 

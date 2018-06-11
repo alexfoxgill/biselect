@@ -21,10 +21,8 @@ describe("Extension", () => {
       .prop('bar')
       .withDefaultValue(0)
 
-
     expect(items).to.not.be.empty
     const itemsAreDistinct = items.every((x, i, a) => a.indexOf(x) === i)
     expect(itemsAreDistinct).to.be.true
   })
-
 })

@@ -31,11 +31,11 @@ export namespace MaybeConverter {
 
   export const wrapSet = <A, B, C, ABParams, BCParams>(get: Get<A, B | null, ABParams>, reverseGet: Get<B, A, ABParams>, set: Set<B, C, BCParams>) =>
     Set.create<A, C, ABParams & BCParams>((a, p, c) => {
-      const b = get._actual(a, p)
+      const b = get._underlying(a, p)
       if (b === null) {
         return a
       } else {
-        return reverseGet._actual(set._actual(b, p, c), p)
+        return reverseGet._underlying(set._underlying(b, p, c), p)
       }
     })
 
@@ -64,8 +64,8 @@ export namespace MaybeConverter {
     const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Converter<A, B, Params> => {
       const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
       return Converter.create<A, B, Params>(Get.create((a, p) => {
-        const b = get._actual(a, p)
-        return b === null || b === undefined ? ifNullGet._actual(a, p): b
+        const b = get._underlying(a, p)
+        return b === null || b === undefined ? ifNullGet._underlying(a, p): b
       }), reverseGet, ext)
     }
 
