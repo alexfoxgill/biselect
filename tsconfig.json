@@ -1,11 +1,10 @@
 {
     "compilerOptions": {
         "outDir": "./dist/",
-        "outFile": "./dist/index.js",
         "sourceMap": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
-        "module": "system",
+        "module": "commonjs",
         "target": "es5",
         "declaration": true
     },
