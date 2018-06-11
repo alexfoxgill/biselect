@@ -1,9 +1,10 @@
-import {Optic} from './Optic'
+import {Composable} from './Optic'
 import {MaybeSelector} from './MaybeSelector'
 import {Selector} from './Selector'
 import {Converter} from './Converter'
 import {Get, GetSignature} from './Get'
 import {Set} from './Set'
+import { Extension } from './Extension';
 
 export interface MaybeConverterCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -15,6 +16,8 @@ export interface MaybeConverterCompose<A, B, Params> {
 
 export interface MaybeConverter<A, B, Params extends {}> {
   type: "maybeConverter"
+  extend: (ext: Extension) => MaybeConverter<A, B, Params>
+
   get: Get<A, B | null, Params>
   reverseGet: Get<B, A, Params>
   compose: MaybeConverterCompose<A, B, Params>
@@ -36,41 +39,52 @@ export namespace MaybeConverter {
       }
     })
 
-  export const create = <A, B, Params>(get: Get<A, B | null, Params>, reverseGet: Get<B, A, Params>): MaybeConverter<A, B, Params> => {
-    const compose: any = <C, BCParams>(other: Optic<B, C, BCParams>) => {
+  export const create = <A, B, Params>(get: Get<A, B | null, Params>, reverseGet: Get<B, A, Params>, ext: Extension = Extension.none): MaybeConverter<A, B, Params> => {
+    get = get.extend(ext)
+    reverseGet = reverseGet.extend(ext)
+    
+    const extend = (newExtension: Extension) => 
+      create(get, reverseGet, Extension.combine(ext, newExtension))
+
+    const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
       switch(other.type) {
         case "get":
-          return Get.composeMaybe(get, other)
+          return Get.composeMaybe(get, other).extend(ext)
         case "maybeSelector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), wrapSet(get, reverseGet, other.set))
+          return MaybeSelector.create(Get.composeMaybe(get, other.get), wrapSet(get, reverseGet, other.set), ext)
         case "selector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), wrapSet(get, reverseGet, other.set))
+          return MaybeSelector.create(Get.composeMaybe(get, other.get), wrapSet(get, reverseGet, other.set), ext)
         case "maybeConverter":
-          return create(Get.composeMaybe(get, other.get), other.reverseGet.compose(reverseGet))
+          return create(Get.composeMaybe(get, other.get), other.reverseGet.compose(reverseGet), ext)
         case "converter":
-          return create(Get.composeMaybe(get, other.get), other.reverseGet.compose(reverseGet))
+          return create(Get.composeMaybe(get, other.get), other.reverseGet.compose(reverseGet), ext)
       }
     }
 
     const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Converter<A, B, Params> => {
-      const ifNullGet = Get.create<A, B, Params>(ifNull)
+      const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
       return Converter.create<A, B, Params>(Get.create((a, p) => {
         const b = get._actual(a, p)
         return b === null || b === undefined ? ifNullGet._actual(a, p): b
-      }), reverseGet)
+      }), reverseGet, ext)
     }
 
     const withDefaultValue = (ifNull: B): Converter<A, B, Params> =>
-      withDefault(Get.create<A, B, Params>(_ => ifNull))
+      withDefault(Get.create<A, B, Params>(_ => ifNull, ext))
 
-    return {
+    const maybeConverter: MaybeConverter<A, B, Params> = {
       type: "maybeConverter",
+      extend,
       get,
       reverseGet,
       compose,
       withDefault,
       withDefaultValue
     }
+
+    ext.extend(maybeConverter)
+
+    return maybeConverter
   }
 }
 

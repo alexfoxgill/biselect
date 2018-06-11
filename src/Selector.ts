@@ -4,10 +4,11 @@ import { Modify, DeepMerge, Merge } from './Modify'
 import { MaybeSelector } from './MaybeSelector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
-import { Optic } from './Optic'
+import { Composable } from './Optic'
 import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
 import { Choose } from './Choose';
+import { Extension } from './Extension';
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -19,6 +20,7 @@ export interface SelectorCompose<A, B, Params> {
 
 export type Selector<A, B, Params extends {}> = {
   type: "selector"
+  extend: (ext: Extension) => Selector<A, B, Params>
   get: Get<A, B, Params>
   set: Set<A, B, Params>
   modify: Modify<A, B, Params>
@@ -34,21 +36,27 @@ export namespace Selector {
   export const fromGetSet = <A, B, Params>(get: (a: A, p: Params) => B, set: (a: A, p: Params, b: B) => A) =>
     create(Get.create(get), Set.create(set))
 
-  export const create = <A, B, Params extends {}>(get: Get<A, B, Params>, set: Set<A, B, Params>): Selector<A, B, Params> => {
-    const modify = Modify.fromGetSet(get, set)
+  export const create = <A, B, Params extends {}>(get: Get<A, B, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): Selector<A, B, Params> => {
+    get = get.extend(ext)
+    set = set.extend(ext)
+    
+    const modify = Modify.fromGetSet(get, set).extend(ext)
+    
+    const extend = (newExtension: Extension) => 
+      create(get, set, Extension.combine(ext, newExtension))
 
-    const compose: any = <C, BCParams>(other: Optic<B, C, BCParams>) => {
+    const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
       switch (other.type) {
         case "get":
           return get.compose(other)
         case "maybeSelector":
-          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set))
+          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set), ext)
         case "selector":
-          return Selector.create(get.compose(other), modify.compose(other.set))
+          return Selector.create(get.compose(other), modify.compose(other.set), ext)
         case "maybeConverter":
-          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet))
+          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
         case "converter":
-          return Selector.create(get.compose(other.get), set.compose(other.reverseGet))
+          return Selector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
       }
     }
 
@@ -58,8 +66,9 @@ export namespace Selector {
     const merge = modify.merge
     const deepMerge = modify.deepMerge
 
-    return {
+    const selector: Selector<A, B, Params> = {
       type: "selector",
+      extend,
       get,
       set,
       modify,
@@ -70,6 +79,10 @@ export namespace Selector {
       merge,
       deepMerge
     }
+
+    ext.extend(selector)
+
+    return selector
   }
 }
 

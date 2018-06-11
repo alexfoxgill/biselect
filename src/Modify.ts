@@ -1,6 +1,7 @@
 import {Get} from './Get'
 import {Set} from './Set'
 import { DeepPartial } from './DeepPartial';
+import { Extension } from './Extension';
 
 export type ModifySignature<A, B, Params extends {}> =
   {} extends Params
@@ -29,6 +30,8 @@ export type DeepMerge<A, B, Params extends {}> =
 export type Modify<A, B, Params extends {}> = ModifySignature<A, B, Params> & {
   type: "modify"
   _actual: (a: A, params: Params, f: (b: B) => B) => A
+  extend: (ext: Extension) => Modify<A, B, Params>
+
   compose: ModifyCompose<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
@@ -42,7 +45,7 @@ export namespace Modify {
         : modify(a, p, f)
     }
 
-  export const create = <A, B, Params extends {}>(modify: (a: A, p: Params, f: (b: B) => B) => A) => {
+  export const create = <A, B, Params extends {}>(modify: (a: A, p: Params, f: (b: B) => B) => A, ext: Extension = Extension.none) => {
     const clone: any = normaliseArgs(modify)
 
     clone.type = "modify"
@@ -56,11 +59,16 @@ export namespace Modify {
       }
     }
 
+    clone.extend = (newExtension: Extension) => 
+      create(modify, Extension.combine(ext, newExtension))
+
     clone.merge = normaliseArgs((a: A, params: Params, someB: Partial<B>): A =>
       clone(a, params, (b: B) => ({ ...b as any, ...someB as any })))
   
     clone.deepMerge = normaliseArgs((a: A, params: Params, someB: DeepPartial<B>): A =>
       clone(a, params, (b: B) => DeepPartial.merge(b, someB)))
+
+    ext.extend(clone)
 
     return clone as Modify<A, B, Params>
   }
