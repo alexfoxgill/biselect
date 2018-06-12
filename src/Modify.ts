@@ -2,6 +2,8 @@ import {Get} from './Get'
 import {Set} from './Set'
 import { DeepPartial } from './DeepPartial';
 import { Extension } from './Extension';
+import { Memoize } from './Memoize';
+import { Debug } from './Debug';
 
 export type ModifySignature<A, B, Params extends {}> =
   {} extends Params
@@ -35,6 +37,8 @@ export type Modify<A, B, Params extends {} = {}> = ModifySignature<A, B, Params>
   compose: ModifyCompose<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
+  memoize: () => Modify<A, B, Params>
+  debug: () => Modify<A, B, Params>
 }
 
 export namespace Modify {
@@ -67,6 +71,9 @@ export namespace Modify {
   
     clone.deepMerge = normaliseArgs((a: A, params: Params, someB: DeepPartial<B>): A =>
       clone(a, params, (b: B) => DeepPartial.merge(b, someB)))
+
+    clone.memoize = () => clone.extend(Memoize())
+    clone.debug = () => clone.extend(Debug())
 
     ext.apply(clone)
 

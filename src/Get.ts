@@ -5,6 +5,8 @@ import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
 import { GetPropOverloads, Prop } from './Prop'
 import { Extension } from './Extension';
+import { Memoize } from './Memoize';
+import { Debug } from './Debug';
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -27,6 +29,8 @@ export type Get<A, B, Params extends {}> = GetSignature<A, B, Params> & {
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B) => C) => Get<A, C, Params>
   prop: GetPropOverloads<A, B, Params>
+  memoize: () => Get<A, B, Params>
+  debug: () => Get<A, B, Params>
 }
 
 export namespace Get {
@@ -54,6 +58,9 @@ export namespace Get {
       Get.create((a, p) => f(clone(a, p)), ext)
 
     clone.prop = Prop.implementation(clone.compose)
+
+    clone.memoize = () => clone.extend(Memoize())
+    clone.debug = () => clone.extend(Debug())
 
     ext.apply(clone)
 

@@ -5,6 +5,8 @@ import {Converter} from './Converter'
 import {Get, GetSignature} from './Get'
 import {Set} from './Set'
 import { Extension } from './Extension';
+import { Memoize } from './Memoize';
+import { Debug } from './Debug';
 
 export interface MaybeConverterCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -23,6 +25,8 @@ export interface MaybeConverter<A, B, Params extends {} = {}> {
   compose: MaybeConverterCompose<A, B, Params>
   withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Converter<A, B, Params>
   withDefaultValue: (ifNull: B) => Converter<A, B, Params>
+  memoize: () => MaybeConverter<A, B, Params>
+  debug: () => MaybeConverter<A, B, Params>
 }
 
 export namespace MaybeConverter {
@@ -79,7 +83,9 @@ export namespace MaybeConverter {
       reverseGet,
       compose,
       withDefault,
-      withDefaultValue
+      withDefaultValue,
+      memoize: () => extend(Memoize()),
+      debug: () => extend(Debug())
     }
 
     ext.apply(maybeConverter)

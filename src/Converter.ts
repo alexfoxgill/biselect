@@ -5,6 +5,8 @@ import { MaybeConverter } from './MaybeConverter'
 import { Get } from './Get'
 import { Set } from './Set'
 import { Extension } from './Extension';
+import { Memoize } from './Memoize';
+import { Debug } from './Debug';
 
 export interface ConverterCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -21,6 +23,8 @@ export interface Converter<A, B, Params extends {} = {}> {
   get: Get<A, B, Params>
   reverseGet: Get<B, A, Params>
   compose: ConverterCompose<A, B, Params>
+  memoize: () => Converter<A, B, Params>
+  debug: () => Converter<A, B, Params>
 }
 
 export namespace Converter {
@@ -59,7 +63,9 @@ export namespace Converter {
       extend,
       get,
       reverseGet,
-      compose
+      compose,
+      memoize: () => extend(Memoize()),
+      debug: () => extend(Debug())
     }
 
     ext.apply(converter)

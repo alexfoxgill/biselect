@@ -14,7 +14,7 @@ describe("Memoize", () => {
     const get = Get.create<Foo, number, { param: number }>((foo, p) => {
       calls++
       return foo.bar
-    }).extend(Memoize())
+    }).memoize()
 
     const foo = { bar: 1 }
     const params = { param: 2 }
@@ -36,7 +36,7 @@ describe("Memoize", () => {
     const get = Get.create<Foo, number, { param: number }>((foo, p) => {
       calls++
       return foo.bar
-    }).extend(Memoize())
+    }).memoize()
 
     const foo = { bar: 1 }
 

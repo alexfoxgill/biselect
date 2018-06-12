@@ -1,5 +1,6 @@
 import { Get } from './Get'
 import { Extension } from './Extension';
+import { Debug } from './Debug';
 
 export type SetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -12,6 +13,7 @@ export type Set<A, B, Params extends {}> = SetSignature<A, B, Params> & {
   extend: (ext: Extension) => Set<A, B, Params>
 
   compose: <C, BCParams>(get: Get<C, B, BCParams>) => Set<A, C, Params & BCParams>
+  debug: () => Set<A, B, Params>
 }
 
 export namespace Set {
@@ -33,6 +35,8 @@ export namespace Set {
 
     clone.compose = <C, BCParams>(get: Get<C, B, BCParams>) =>
       create<A, C, Params & BCParams>((a, p, c) => clone._underlying(a, p, get._underlying(c, p)), ext)
+
+    clone.debug = () => clone.extend(Debug())
 
     ext.apply(clone)
 

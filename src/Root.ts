@@ -3,12 +3,16 @@ import { SelectorPropOverloads, Prop } from "./Prop";
 import { MaybeConverter } from "./MaybeConverter";
 import { Choose } from "./Choose";
 import { Extension } from "./Extension";
+import { Memoize } from "./Memoize";
+import { Debug } from "./Debug";
 
 export interface Root<A> {
   indexBy: IndexBy<A, A>
   prop: SelectorPropOverloads<A, A>
   choose<B extends A>(typeGuard: (a: A) => a is B): MaybeConverter<A, B>
   extend: (newExt: Extension) => Root<A>
+  memoize: () => Root<A>
+  debug: () => Root<A>
 }
 
 export namespace Root {
@@ -16,6 +20,8 @@ export namespace Root {
     indexBy: (key: string) => IndexBy.create(key).extend(ext),
     prop: (...props: string[]) => Prop.many(...props).extend(ext),
     choose: <B extends A>(typeGuard: (a: A) => a is B) => Choose.create(typeGuard).extend(ext),
-    extend: (newExt: Extension) => create<A>(Extension.combine(ext, newExt))
+    extend: (newExt: Extension) => create<A>(Extension.combine(ext, newExt)),
+    memoize() { return this.extend(Memoize()) },
+    debug() { return this.extend(Debug()) }
   }) as any
 }

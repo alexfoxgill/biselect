@@ -9,6 +9,8 @@ import { MaybeSelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy'
 import { Choose } from './Choose';
 import { Extension } from './Extension';
+import { Memoize } from './Memoize';
+import { Debug } from './Debug';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -33,6 +35,8 @@ export type MaybeSelector<A, B, Params extends {} = {}> = {
   deepMerge: DeepMerge<A, B, Params>
   withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Selector<A, B, Params>
   withDefaultValue: (ifNull: B) => Selector<A, B, Params>
+  memoize: () => MaybeSelector<A, B, Params>
+  debug: () => MaybeSelector<A, B, Params>
 }
 
 export namespace MaybeSelector {
@@ -93,7 +97,9 @@ export namespace MaybeSelector {
       merge,
       deepMerge,
       withDefault,
-      withDefaultValue
+      withDefaultValue,
+      memoize: () => extend(Memoize()),
+      debug: () => extend(Debug())
     }
 
     ext.apply(maybeSelector)

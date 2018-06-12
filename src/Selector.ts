@@ -9,6 +9,8 @@ import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
 import { Choose } from './Choose';
 import { Extension } from './Extension';
+import { Memoize } from './Memoize';
+import { Debug } from './Debug';
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -30,6 +32,8 @@ export type Selector<A, B, Params extends {} = {}> = {
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
+  memoize: () => Selector<A, B, Params>
+  debug: () => Selector<A, B, Params>
 }
 
 export namespace Selector {
@@ -77,7 +81,9 @@ export namespace Selector {
       indexBy,
       choose,
       merge,
-      deepMerge
+      deepMerge,
+      memoize: () => extend(Memoize()),
+      debug: () => extend(Debug())
     }
 
     ext.apply(selector)
