@@ -25,4 +25,26 @@ describe("Memoize", () => {
     expect(result1).to.equal(result2)
     expect(calls).to.equal(1)
   })
+
+  it("retains the value of a Get if the parameters are shallow-equal", () => {
+    interface Foo {
+      bar: number
+    }
+
+    let calls = 0
+
+    const get = Get.create<Foo, number, { param: number }>((foo, p) => {
+      calls++
+      return foo.bar
+    }).extend(Memoize())
+
+    const foo = { bar: 1 }
+
+    const result1 = get(foo, { param: 2 })
+    const result2 = get(foo, { param: 2 })
+
+    expect(result1).to.equal(result2)
+    expect(calls).to.equal(1)
+
+  })
 })
