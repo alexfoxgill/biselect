@@ -18,7 +18,7 @@ export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
 }
 
-export type MaybeSelector<A, B, Params extends {}> = {
+export type MaybeSelector<A, B, Params extends {} = {}> = {
   type: "maybeSelector"
   extend: (ext: Extension) => MaybeSelector<A, B, Params>
 
@@ -36,10 +36,10 @@ export type MaybeSelector<A, B, Params extends {}> = {
 }
 
 export namespace MaybeSelector {
-  export const fromGetSet = <A, B, Params>(get: (a: A, p: Params) => B | null, set: (a: A, p: Params, b: B) => A) =>
+  export const fromGetSet = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B | null, set: (a: A, p: Params, b: B) => A) =>
     create(Get.create(get), Set.create(set))
 
-  export const create = <A, B, Params extends {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): MaybeSelector<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): MaybeSelector<A, B, Params> => {
     get = get.extend(ext)
     set = set.extend(ext)
 

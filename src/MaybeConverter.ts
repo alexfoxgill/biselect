@@ -14,7 +14,7 @@ export interface MaybeConverterCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): MaybeConverter<A, C, Params & BCParams>
 }
 
-export interface MaybeConverter<A, B, Params extends {}> {
+export interface MaybeConverter<A, B, Params extends {} = {}> {
   type: "maybeConverter"
   extend: (ext: Extension) => MaybeConverter<A, B, Params>
 
@@ -26,7 +26,7 @@ export interface MaybeConverter<A, B, Params extends {}> {
 }
 
 export namespace MaybeConverter {
-  export const fromGets = <A, B, Params>(get: (a: A, p: Params) => B | null, reverseGet: (b: B, p: Params) => A) =>
+  export const fromGets = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B | null, reverseGet: (b: B, p: Params) => A) =>
     create(Get.create(get), Get.create(reverseGet))
 
   export const wrapSet = <A, B, C, ABParams, BCParams>(get: Get<A, B | null, ABParams>, reverseGet: Get<B, A, ABParams>, set: Set<B, C, BCParams>) =>
@@ -39,7 +39,7 @@ export namespace MaybeConverter {
       }
     })
 
-  export const create = <A, B, Params>(get: Get<A, B | null, Params>, reverseGet: Get<B, A, Params>, ext: Extension = Extension.none): MaybeConverter<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(get: Get<A, B | null, Params>, reverseGet: Get<B, A, Params>, ext: Extension = Extension.none): MaybeConverter<A, B, Params> => {
     get = get.extend(ext)
     reverseGet = reverseGet.extend(ext)
     

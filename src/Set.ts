@@ -23,7 +23,7 @@ export namespace Set {
         : set(a, p, b)
     }
 
-  export const create = <A, B, Params extends {}>(set: (a: A, p: Params, b: B) => A, ext: Extension = Extension.none): Set<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(set: (a: A, p: Params, b: B) => A, ext: Extension = Extension.none): Set<A, B, Params> => {
     const clone: any = (...args: any[]) => clone._underlying(...args)
     clone.type = "set"
     clone._underlying = normaliseArgs(set)

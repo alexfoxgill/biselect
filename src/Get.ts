@@ -30,7 +30,7 @@ export type Get<A, B, Params extends {}> = GetSignature<A, B, Params> & {
 }
 
 export namespace Get {
-  export const create = <A, B, Params extends {}>(get: (a: A, p: Params) => B, ext: Extension = Extension.none): Get<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B, ext: Extension = Extension.none): Get<A, B, Params> => {
     const clone: any = (...args: any[]) => clone._underlying(...args)
     clone.type = "get"
     clone._underlying = (a: A, p: Params) => get(a, p)

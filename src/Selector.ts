@@ -18,7 +18,7 @@ export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): Selector<A, C, Params & BCParams>
 }
 
-export type Selector<A, B, Params extends {}> = {
+export type Selector<A, B, Params extends {} = {}> = {
   type: "selector"
   extend: (ext: Extension) => Selector<A, B, Params>
   get: Get<A, B, Params>
@@ -33,10 +33,10 @@ export type Selector<A, B, Params extends {}> = {
 }
 
 export namespace Selector {
-  export const fromGetSet = <A, B, Params>(get: (a: A, p: Params) => B, set: (a: A, p: Params, b: B) => A) =>
+  export const fromGetSet = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B, set: (a: A, p: Params, b: B) => A) =>
     create(Get.create(get), Set.create(set))
 
-  export const create = <A, B, Params extends {}>(get: Get<A, B, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): Selector<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(get: Get<A, B, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): Selector<A, B, Params> => {
     get = get.extend(ext)
     set = set.extend(ext)
     

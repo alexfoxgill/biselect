@@ -13,7 +13,7 @@ describe("MaybeConverter", () => {
   }
 
   it("gets", () => {
-    const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+    const converter = MaybeConverter.fromGets<string, number>(parseNum, num => num.toString())
 
     const result = converter.get("1")
     expect(result).to.equal(1)
@@ -23,7 +23,7 @@ describe("MaybeConverter", () => {
   })
 
   it("reverse gets", () => {
-    const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+    const converter = MaybeConverter.fromGets<string, number>(parseNum, num => num.toString())
 
     const result = converter.reverseGet(1)
     expect(result).to.equal("1")
@@ -31,7 +31,7 @@ describe("MaybeConverter", () => {
 
   describe(".withDefault[Value]()", () => {
     it("ignores the default if the value is found", () => {
-      const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+      const converter = MaybeConverter.fromGets<string, number>(parseNum, num => num.toString())
         .withDefaultValue(1)
 
       const result = converter.get("2")
@@ -39,7 +39,7 @@ describe("MaybeConverter", () => {
     })
 
     it("returns the default if null is found", () => {
-      const converter = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+      const converter = MaybeConverter.fromGets<string, number>(parseNum, num => num.toString())
         .withDefaultValue(1)
 
       const result = converter.get("two")
@@ -64,7 +64,7 @@ describe("MaybeConverter", () => {
   })
   
   it("composes with Get", () => {
-    const get = MaybeConverter.fromGets<string, number, {}>(parseNum, num => num.toString())
+    const get = MaybeConverter.fromGets<string, number>(parseNum, num => num.toString())
       .compose(Get.create(x => x * 2))
 
     const result = get("1")
@@ -77,8 +77,8 @@ describe("MaybeConverter", () => {
   it("composes with Selector", () => {
     interface Foo { bar: string }
 
-    const maybeSelector = MaybeConverter.fromGets<Foo | null, Foo, {}>(x => x, x => x)
-      .compose(Selector.fromGetSet<Foo, string, {}>(foo => foo.bar, (foo, _, bar) => ({ bar })))
+    const maybeSelector = MaybeConverter.fromGets<Foo | null, Foo>(x => x, x => x)
+      .compose(Selector.fromGetSet<Foo, string>(foo => foo.bar, (foo, _, bar) => ({ bar })))
 
     const result = maybeSelector.modify({ bar: "bar" }, x => "foo" + x)
     expect(result).to.deep.equal({ bar: "foobar" })
@@ -88,8 +88,8 @@ describe("MaybeConverter", () => {
   })
 
   it("composes with MaybeSelector", () => {
-    const maybeSelector = MaybeConverter.fromGets<string | null, string, {}>(x => x, x => x)
-      .compose(MaybeSelector.fromGetSet<string, string, {}>(str => str[0] || null, (str, _, ch) => str.length === 0 ? ch : ch + str.substr(1)))
+    const maybeSelector = MaybeConverter.fromGets<string | null, string>(x => x, x => x)
+      .compose(MaybeSelector.fromGetSet<string, string>(str => str[0] || null, (str, _, ch) => str.length === 0 ? ch : ch + str.substr(1)))
 
     const result = maybeSelector.modify("foo", x => x.toUpperCase())
     expect(result).to.equal("Foo")
@@ -102,8 +102,8 @@ describe("MaybeConverter", () => {
   })
 
   it("composes with Converter", () => {
-    const maybeConverter = MaybeConverter.fromGets<string | null, string, {}>(x => x, x => x)
-      .compose(Converter.fromGets<string, string[], {}>(str => str.split(''), list => list.join('')))
+    const maybeConverter = MaybeConverter.fromGets<string | null, string>(x => x, x => x)
+      .compose(Converter.fromGets<string, string[]>(str => str.split(''), list => list.join('')))
 
     const result = maybeConverter.get("ab")
     expect(result).to.deep.equal(["a", "b"])
@@ -116,7 +116,7 @@ describe("MaybeConverter", () => {
   })
 
   it("composes with MaybeConverter", () => {
-    const maybeConverter = MaybeConverter.fromGets<string | null, string, {}>(x => x, x => x)
+    const maybeConverter = MaybeConverter.fromGets<string | null, string>(x => x, x => x)
       .compose(MaybeConverter.fromGets(parseNum, num => num.toString()))
 
     const result = maybeConverter.get("10")

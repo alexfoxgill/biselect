@@ -14,7 +14,7 @@ export interface ConverterCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): Converter<A, C, Params & BCParams>
 }
 
-export interface Converter<A, B, Params extends {}> {
+export interface Converter<A, B, Params extends {} = {}> {
   type: "converter"
   extend: (ext: Extension) => Converter<A, B, Params>
 
@@ -25,11 +25,11 @@ export interface Converter<A, B, Params extends {}> {
 
 export namespace Converter {
 
-  export const fromGets = <A, B, Params>(get: (a: A, p: Params) => B, reverseGet: (b: B, p: Params) => A) =>
+  export const fromGets = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B, reverseGet: (b: B, p: Params) => A) =>
     create(Get.create(get), Get.create(reverseGet))
 
 
-  export const create = <A, B, Params>(get: Get<A, B, Params>, reverseGet: Get<B, A, Params>, ext: Extension = Extension.none): Converter<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(get: Get<A, B, Params>, reverseGet: Get<B, A, Params>, ext: Extension = Extension.none): Converter<A, B, Params> => {
     get = get.extend(ext)
     reverseGet = reverseGet.extend(ext)
     

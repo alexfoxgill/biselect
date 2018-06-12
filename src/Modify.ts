@@ -27,7 +27,7 @@ export type DeepMerge<A, B, Params extends {}> =
     : (a: A, params: Params, b: DeepPartial<B>) => A
   : never
 
-export type Modify<A, B, Params extends {}> = ModifySignature<A, B, Params> & {
+export type Modify<A, B, Params extends {} = {}> = ModifySignature<A, B, Params> & {
   type: "modify"
   _underlying: (a: A, params: Params, f: (b: B) => B) => A
   extend: (ext: Extension) => Modify<A, B, Params>
@@ -45,7 +45,7 @@ export namespace Modify {
         : modify(a, p, f)
     }
 
-  export const create = <A, B, Params extends {}>(modify: (a: A, p: Params, f: (b: B) => B) => A, ext: Extension = Extension.none) => {
+  export const create = <A, B, Params extends {} = {}>(modify: (a: A, p: Params, f: (b: B) => B) => A, ext: Extension = Extension.none) => {
     const clone: any = (...args: any[]) => clone._underlying(...args)
     clone.type = "modify"
     clone._underlying = normaliseArgs(modify)

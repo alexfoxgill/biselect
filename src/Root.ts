@@ -5,9 +5,9 @@ import { Choose } from "./Choose";
 import { Extension } from "./Extension";
 
 export interface Root<A> {
-  indexBy: IndexBy<A, A, {}>
-  prop: SelectorPropOverloads<A, A, {}>
-  choose<B extends A>(typeGuard: (a: A) => a is B): MaybeConverter<A, B, {}>
+  indexBy: IndexBy<A, A>
+  prop: SelectorPropOverloads<A, A>
+  choose<B extends A>(typeGuard: (a: A) => a is B): MaybeConverter<A, B>
   extend: (newExt: Extension) => Root<A>
 }
 

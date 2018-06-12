@@ -10,7 +10,7 @@ describe("MaybeSelector", () => {
 
   it("gets", () => {
     interface Foo { bar: number | null }
-    const selector = MaybeSelector.fromGetSet<Foo, number, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const selector = MaybeSelector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
 
     const result = selector.get({ bar: 1 })
     expect(result).to.equal(1)
@@ -21,7 +21,7 @@ describe("MaybeSelector", () => {
 
   it("sets", () => {
     interface Foo { bar: number | null }
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, number, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = MaybeSelector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
 
     const result = maybeSelector.set({ bar: 1 }, 2)
     expect(result).to.deep.equal({ bar: 2 })
@@ -32,7 +32,7 @@ describe("MaybeSelector", () => {
   
   it("modifies", () => {
     interface Foo { bar: number | null }
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, number, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = MaybeSelector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
 
     const result = maybeSelector.modify({ bar: 1 }, x => x + 1)
     expect(result).to.deep.equal({ bar: 2 })
@@ -43,7 +43,7 @@ describe("MaybeSelector", () => {
 
   describe(".withDefault[Value]()", () => {
     it("ignores the default if the value is found", () => {
-      const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+      const selector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
         .withDefaultValue(1)
 
       const result = selector.get([2])
@@ -51,7 +51,7 @@ describe("MaybeSelector", () => {
     })
     
     it("returns the default if null is found", () => {
-      const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+      const selector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
         .withDefaultValue(1)
 
       const result = selector.get([])
@@ -75,7 +75,7 @@ describe("MaybeSelector", () => {
     })
 
     it("modifies the default value", () => {
-      const selector = MaybeSelector.fromGetSet<number[], number, {}>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+      const selector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
         .withDefaultValue(1)
 
       const result = selector.modify([], x => x + 1)
@@ -87,7 +87,7 @@ describe("MaybeSelector", () => {
     interface Foo { bar: Bar | null }
     interface Bar { qux: number }
 
-    const get = MaybeSelector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const get = MaybeSelector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
       .compose(Get.create((bar: Bar) => bar.qux))
 
     const result = get({ bar: { qux: 1 } })
@@ -101,8 +101,8 @@ describe("MaybeSelector", () => {
     interface Foo { bar: Bar | null }
     interface Bar { qux: number }
 
-    const selector = MaybeSelector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(Selector.fromGetSet<Bar, number, {}>(bar => bar.qux, (bar, _, qux) => ({ qux })))
+    const selector = MaybeSelector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(Selector.fromGetSet<Bar, number>(bar => bar.qux, (bar, _, qux) => ({ qux })))
 
     const result = selector.modify({ bar: { qux: 1 } }, x => x + 1)
     expect(result).to.deep.equal({ bar: { qux: 2 } })
@@ -115,8 +115,8 @@ describe("MaybeSelector", () => {
     interface Foo { bar: Bar | null }
     interface Bar { qux: number | null }
 
-    const selector = MaybeSelector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(MaybeSelector.fromGetSet<Bar, number, {}>(bar => bar.qux, (bar, _, qux) => ({ qux })))
+    const selector = MaybeSelector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(MaybeSelector.fromGetSet<Bar, number>(bar => bar.qux, (bar, _, qux) => ({ qux })))
 
     const result = selector.modify({ bar: { qux: 1 } }, x => x + 1)
     expect(result).to.deep.equal({ bar: { qux: 2 } })
@@ -131,8 +131,8 @@ describe("MaybeSelector", () => {
   it("composes with Converter", () => {
     interface Foo { bar: string | null }
 
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, string, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(Converter.fromGets<string, string[], {}>(str => str.split(''), list => list.join('')))
+    const maybeSelector = MaybeSelector.fromGetSet<Foo, string>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(Converter.fromGets<string, string[]>(str => str.split(''), list => list.join('')))
 
     const result = maybeSelector.modify({ bar: "foo" }, str => str.reverse())
     expect(result).to.deep.equal({ bar: "oof" })
@@ -149,7 +149,7 @@ describe("MaybeSelector", () => {
       return isNaN(num) ? null : num
     }
 
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, string, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = MaybeSelector.fromGetSet<Foo, string>(foo => foo.bar, (foo, _, bar) => ({ bar }))
       .compose(MaybeConverter.fromGets(parseNum, num => num.toString()))
 
     const result = maybeSelector.modify({ bar: "1" }, x => x + 1)

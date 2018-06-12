@@ -50,7 +50,7 @@ describe("Get", () => {
     interface Bar { qux: number }
 
     const get = Get.create((foo: Foo) => foo.bar)
-      .compose(Selector.fromGetSet<Bar, number, {}>(b => b.qux, (b, _, qux) => ({ qux })))
+      .compose(Selector.fromGetSet<Bar, number>(b => b.qux, (b, _, qux) => ({ qux })))
 
     const result = get({ bar: { qux: 1 } })
     
@@ -62,7 +62,7 @@ describe("Get", () => {
     interface Bar { qux: number | null }
 
     const get = Get.create((foo: Foo) => foo.bar)
-    .compose(MaybeSelector.fromGetSet<Bar, number, {}>(b => b.qux, (b, _, qux) => ({ qux })))
+    .compose(MaybeSelector.fromGetSet<Bar, number>(b => b.qux, (b, _, qux) => ({ qux })))
 
     const result = get({ bar: { qux: 1 } })
     expect(result).to.equal(1)
@@ -77,7 +77,7 @@ describe("Get", () => {
     interface Sha { pow: number }
 
     const get = Get.create((foo: Foo) => foo.bar)
-      .compose(Converter.fromGets<Bar, Sha, {}>(bar => ({ pow: bar.qux }), sha => ({ qux: sha.pow })))
+      .compose(Converter.fromGets<Bar, Sha>(bar => ({ pow: bar.qux }), sha => ({ qux: sha.pow })))
 
     const result = get({ bar: { qux: 1 } })
     

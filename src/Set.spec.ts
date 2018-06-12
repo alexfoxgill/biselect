@@ -7,7 +7,7 @@ describe("Set", () => {
   
   it("doesn't permit a param argument when Params is empty", () => {
     interface Foo { bar: number }
-    const set = Set.create<Foo, number, {}>((foo, p, bar) => ({ bar }))
+    const set = Set.create<Foo, number>((foo, p, bar) => ({ bar }))
     const result = set({ bar: 1 }, 2)
     
     expect(result).to.deep.equal({ bar: 2 })
@@ -23,7 +23,7 @@ describe("Set", () => {
 
   it("composes with Get", () => {
     interface Foo { bar: number }
-    const set = Set.create<Foo, number, {}>((foo, p, bar) => ({ bar }))
+    const set = Set.create<Foo, number>((foo, p, bar) => ({ bar }))
       .compose(Get.create((num: number) => num + 1))
 
     const result = set({ bar: 0 }, 10)
