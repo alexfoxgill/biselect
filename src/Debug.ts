@@ -6,32 +6,22 @@ export function Debug() {
 
 export namespace Debug {
 
-  const wrap = (level: DebugLevel, name: string, f: Function) => (...args: any[]) => {
-    let indent = ""
-    for (let i = 0; i < level.level; i++) {
-      indent += ">> "
-    }
-    console.log(indent + `Calling ${name} with arguments:`, ...args)
-    level.level++
+  const wrap = (name: string, f: Function) => (...args: any[]) => {
+    console.group()
+    console.log(`Calling ${name} with arguments:`, ...args)
     const result = f(...args)
-    level.level--
-    console.log(indent + "Result:", result)
-    console.log()
+    console.log("Result:", result)
+    console.groupEnd()
     return result
   }
 
-  interface DebugLevel {
-    level: number
-  }
-
   export const create = (): Extension => {
-    const level: DebugLevel = { level: 0 }
     return Extension.create(optic => {
       switch (optic.type) {
         case "get":
         case "set":
         case "modify":
-          optic._underlying = wrap(level, optic.type, optic._underlying)
+          optic._underlying = wrap(optic.type, optic._underlying)
           break;
       }
     })
