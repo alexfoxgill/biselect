@@ -1,4 +1,4 @@
-import { Composable } from './Optic'
+import { Composable } from './Transformer'
 import { MaybeSelector } from './MaybeSelector'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'

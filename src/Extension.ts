@@ -1,4 +1,4 @@
-import { All } from './Optic'
+import { All } from './Transformer'
 
 export interface Extension {
   apply: <A, B, Params>(subject: All<A, B, Params>) => void

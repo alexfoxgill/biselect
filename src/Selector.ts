@@ -4,7 +4,7 @@ import { Modify, DeepMerge, Merge } from './Modify'
 import { MaybeSelector } from './MaybeSelector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
-import { Composable } from './Optic'
+import { Composable } from './Transformer'
 import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
 import { Choose } from './Choose';

@@ -1,7 +1,7 @@
 import { Get, GetSignature } from './Get'
 import { Set } from './Set'
 import { Modify, Merge, DeepMerge } from './Modify'
-import { Composable } from './Optic'
+import { Composable } from './Transformer'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
