@@ -1,7 +1,7 @@
 import { All } from './Optic'
 
 export interface Extension {
-  extend: <A, B, Params>(subject: All<A, B, Params>) => void
+  apply: <A, B, Params>(subject: All<A, B, Params>) => void
 }
 
 export namespace Extension {
@@ -15,8 +15,8 @@ export namespace Extension {
         .filter((ext, i, list) => list.indexOf(ext) === i)
     }
 
-    extend = <A, B, Params>(subject: All<A, B, Params>) => {
-      this.extensions.forEach(x => x.extend(subject))
+    apply = <A, B, Params>(subject: All<A, B, Params>) => {
+      this.extensions.forEach(x => x.apply(subject))
     }
   }
 
@@ -30,6 +30,6 @@ export namespace Extension {
 
   export const none = new CompositeExtension([])
 
-  export const create = (extend: <A, B, Params>(subject: All<A, B, Params>) => void): Extension =>
-    ({ extend })
+  export const create = (apply: <A, B, Params>(subject: All<A, B, Params>) => void): Extension =>
+    ({ apply })
 }

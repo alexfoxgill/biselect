@@ -55,7 +55,7 @@ export namespace Get {
 
     clone.prop = Prop.implementation(clone.compose)
 
-    ext.extend(clone)
+    ext.apply(clone)
 
     return clone as Get<A, B, Params>
   }

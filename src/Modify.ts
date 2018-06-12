@@ -68,7 +68,7 @@ export namespace Modify {
     clone.deepMerge = normaliseArgs((a: A, params: Params, someB: DeepPartial<B>): A =>
       clone(a, params, (b: B) => DeepPartial.merge(b, someB)))
 
-    ext.extend(clone)
+    ext.apply(clone)
 
     return clone as Modify<A, B, Params>
   }

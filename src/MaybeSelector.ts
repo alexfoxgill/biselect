@@ -96,7 +96,7 @@ export namespace MaybeSelector {
       withDefaultValue
     }
 
-    ext.extend(maybeSelector)
+    ext.apply(maybeSelector)
 
     return maybeSelector
   }

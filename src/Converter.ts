@@ -62,7 +62,7 @@ export namespace Converter {
       compose
     }
 
-    ext.extend(converter)
+    ext.apply(converter)
 
     return converter
   }

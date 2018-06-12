@@ -34,7 +34,7 @@ export namespace Set {
     clone.compose = <C, BCParams>(get: Get<C, B, BCParams>) =>
       create<A, C, Params & BCParams>((a, p, c) => clone._underlying(a, p, get._underlying(c, p)), ext)
 
-    ext.extend(clone)
+    ext.apply(clone)
 
     return clone as Set<A, B, Params>
   }

@@ -82,7 +82,7 @@ export namespace MaybeConverter {
       withDefaultValue
     }
 
-    ext.extend(maybeConverter)
+    ext.apply(maybeConverter)
 
     return maybeConverter
   }

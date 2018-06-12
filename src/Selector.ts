@@ -80,7 +80,7 @@ export namespace Selector {
       deepMerge
     }
 
-    ext.extend(selector)
+    ext.apply(selector)
 
     return selector
   }
