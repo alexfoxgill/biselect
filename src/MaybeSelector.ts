@@ -1,13 +1,14 @@
 import { Get, GetSignature } from './Get'
 import { Set } from './Set'
 import { Modify, Merge, DeepMerge } from './Modify'
-import { Optic } from './Optic'
+import { Composable } from './Transformer'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
 import { MaybeSelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy'
 import { Choose } from './Choose';
+import { Extension } from './Extension';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -17,8 +18,10 @@ export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
 }
 
-export type MaybeSelector<A, B, Params extends {}> = {
+export type MaybeSelector<A, B, Params extends {} = {}> = {
   type: "maybeSelector"
+  extend: (ext: Extension) => MaybeSelector<A, B, Params>
+
   get: Get<A, B | null, Params>
   set: Set<A, B, Params>
   modify: Modify<A, B, Params>
@@ -33,24 +36,30 @@ export type MaybeSelector<A, B, Params extends {}> = {
 }
 
 export namespace MaybeSelector {
-  export const fromGetSet = <A, B, Params>(get: (a: A, p: Params) => B | null, set: (a: A, p: Params, b: B) => A) =>
+  export const fromGetSet = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B | null, set: (a: A, p: Params, b: B) => A) =>
     create(Get.create(get), Set.create(set))
 
-  export const create = <A, B, Params extends {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>): MaybeSelector<A, B, Params> => {
-    const modify = Modify.fromMaybeGetSet(get, set)
+  export const create = <A, B, Params extends {} = {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): MaybeSelector<A, B, Params> => {
+    get = get.extend(ext)
+    set = set.extend(ext)
 
-    const compose: any = <C, BCParams>(other: Optic<B, C, BCParams>) => {
+    const modify = Modify.fromMaybeGetSet(get, set).extend(ext)
+
+    const extend = (newExtension: Extension) => 
+      create(get, set, Extension.combine(ext, newExtension))
+
+    const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
       switch (other.type) {
         case "get":
-          return Get.composeMaybe(get, other)
+          return Get.composeMaybe(get, other).extend(ext)
         case "maybeSelector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), modify.compose(other.set))
+          return MaybeSelector.create(Get.composeMaybe(get, other.get), modify.compose(other.set), ext)
         case "selector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), modify.compose(other.set))
+          return MaybeSelector.create(Get.composeMaybe(get, other.get), modify.compose(other.set), ext)
         case "maybeConverter":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet))
+          return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet), ext)
         case "converter":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet))
+          return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet), ext)
       }
     }
     
@@ -61,18 +70,19 @@ export namespace MaybeSelector {
     const deepMerge = modify.deepMerge
 
     const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> => {
-      const ifNullGet = Get.create<A, B, Params>(ifNull)
+      const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
       return Selector.create<A, B, Params>(Get.create((a, p) => {
-        const b = get._actual(a, p)
-        return b === null || b === undefined ? ifNullGet._actual(a, p): b
-      }), set)
+        const b = get._underlying(a, p)
+        return b === null || b === undefined ? ifNullGet._underlying(a, p): b
+      }, ext), set, ext)
     }
 
     const withDefaultValue = (ifNull: B): Selector<A, B, Params> =>
-      withDefault(Get.create<A, B, Params>(_ => ifNull))
+      withDefault(Get.create<A, B, Params>(_ => ifNull, ext))
 
-    return {
+    const maybeSelector: MaybeSelector<A, B, Params> = {
       type: "maybeSelector",
+      extend,
       get,
       set,
       modify,
@@ -85,5 +95,9 @@ export namespace MaybeSelector {
       withDefault,
       withDefaultValue
     }
+
+    ext.apply(maybeSelector)
+
+    return maybeSelector
   }
 }

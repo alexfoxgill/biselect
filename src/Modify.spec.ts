@@ -6,7 +6,7 @@ import { Set } from './Set';
 describe("Modify", () => {
   it("modifies", () => {
     interface Foo { bar: number }
-    const modify = Modify.create<Foo, number, {}>((foo, p, f) => ({ bar: f(foo.bar) }))
+    const modify = Modify.create<Foo, number>((foo, p, f) => ({ bar: f(foo.bar) }))
 
     const result = modify({ bar: 1 }, x => x + 1)
     expect(result).to.deep.equal({ bar: 2 })
@@ -23,7 +23,7 @@ describe("Modify", () => {
   it("merges", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number, sha: string }
-    const modify = Modify.create<Foo, Bar, {}>((foo, p, f) => ({ bar: f(foo.bar) }))
+    const modify = Modify.create<Foo, Bar>((foo, p, f) => ({ bar: f(foo.bar) }))
 
     const result = modify.merge({ bar: { qux: 1, sha: "pow" }  }, { qux: 2 })
     expect(result).to.deep.equal({ bar: { qux: 2, sha: "pow" }})
@@ -45,7 +45,7 @@ describe("Modify", () => {
       pow: string
       ping: number
     }
-    const modify = Modify.create<Foo, Bar, {}>((foo, p, f) => ({ bar: f(foo.bar) }))
+    const modify = Modify.create<Foo, Bar>((foo, p, f) => ({ bar: f(foo.bar) }))
 
     const result = modify.deepMerge({ bar: { qux: 1, sha: { pow: "pow", ping: 1 } } }, { sha: { ping: 2 } })
     expect(result).to.deep.equal({ bar: { qux: 1, sha: { pow: "pow", ping: 2 } } })
@@ -67,8 +67,8 @@ describe("Modify", () => {
   it("composes with another Modify", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
-    const modify = Modify.create<Foo, Bar, {}>((foo, p, f) => ({ bar: f(foo.bar) }))
-      .compose(Modify.create<Bar, number, {}>((bar, p, f) => ({ qux: f(bar.qux) })))
+    const modify = Modify.create<Foo, Bar>((foo, p, f) => ({ bar: f(foo.bar) }))
+      .compose(Modify.create<Bar, number>((bar, p, f) => ({ qux: f(bar.qux) })))
 
     const result = modify({ bar: { qux: 1 } }, x => x + 1)
     expect(result).to.deep.equal({ bar: { qux: 2 } })
@@ -78,7 +78,7 @@ describe("Modify", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
     const modify = Modify.create<Foo, Bar, { param: number }>((foo, p, f) => ({ bar: f(foo.bar) }))
-      .compose(Modify.create<Bar, number, {}>((bar, p, f) => ({ qux: f(bar.qux) })))
+      .compose(Modify.create<Bar, number>((bar, p, f) => ({ qux: f(bar.qux) })))
 
     const result = modify({ bar: { qux: 1 } }, { param: 3 }, x => x + 1)
     expect(result).to.deep.equal({ bar: { qux: 2 } })
@@ -87,8 +87,8 @@ describe("Modify", () => {
   it("composes with Set", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
-    const modify = Modify.create<Foo, Bar, {}>((foo, p, f) => ({ bar: f(foo.bar) }))
-      .compose(Set.create<Bar, number, {}>((bar, p, qux) => ({ qux })))
+    const modify = Modify.create<Foo, Bar>((foo, p, f) => ({ bar: f(foo.bar) }))
+      .compose(Set.create<Bar, number>((bar, p, qux) => ({ qux })))
 
     const result = modify({ bar: { qux: 1 } }, 2)
     expect(result).to.deep.equal({ bar: { qux: 2 } })
@@ -98,7 +98,7 @@ describe("Modify", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
     const set = Modify.create<Foo, Bar, { param: number }>((foo, p, f) => ({ bar: f(foo.bar) }))
-      .compose(Set.create<Bar, number, {}>((bar, p, qux) => ({ qux })))
+      .compose(Set.create<Bar, number>((bar, p, qux) => ({ qux })))
 
     const result = set({ bar: { qux: 1 } }, { param: 3 }, 2)
     expect(result).to.deep.equal({ bar: { qux: 2 } })

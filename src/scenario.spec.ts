@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import 'mocha';
 import {Biselect} from './index'
 import {indexBy, Lookup} from './util'
+import { Memoize } from './Memoize';
 
 type UserId = string
 type DocumentId = string
@@ -99,7 +100,7 @@ const root: Domain = {
 }
 
 describe("Users/Documents scenario", () => {
-  const fromRoot = Biselect.from<Domain>()
+  const fromRoot = Biselect.from<Domain>().extend(Memoize())
   const userSelector = fromRoot.prop('users').indexBy('userId')
   const docSelector = fromRoot.prop('documents').indexBy('docId')
   const permissionSelector = fromRoot.prop('permissions').indexBy('userId').withDefaultValue({}).indexBy('docId').withDefaultValue([])

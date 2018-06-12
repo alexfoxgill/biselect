@@ -10,7 +10,7 @@ describe("Selector", () => {
 
   it("gets", () => {
     interface Foo { bar: number }
-    const selector = Selector.fromGetSet<Foo, number, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const selector = Selector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
 
     const result = selector.get({ bar: 1 })
 
@@ -19,7 +19,7 @@ describe("Selector", () => {
 
   it("sets", () => {
     interface Foo { bar: number }
-    const selector = Selector.fromGetSet<Foo, number, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const selector = Selector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
 
     const result = selector.set({ bar: 1 }, 2)
 
@@ -28,7 +28,7 @@ describe("Selector", () => {
   
   it("modifies", () => {
     interface Foo { bar: number }
-    const selector = Selector.fromGetSet<Foo, number, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const selector = Selector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
 
     const result = selector.modify({ bar: 1 }, x => x + 1)
 
@@ -40,7 +40,7 @@ describe("Selector", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
 
-    const get = Selector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const get = Selector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
       .compose(Get.create((bar: Bar) => bar.qux))
 
     const result = get({ bar: { qux: 1 } })
@@ -52,8 +52,8 @@ describe("Selector", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
 
-    const selector = Selector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(Selector.fromGetSet<Bar, number, {}>(bar => bar.qux, (bar, _, qux) => ({ qux })))
+    const selector = Selector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(Selector.fromGetSet<Bar, number>(bar => bar.qux, (bar, _, qux) => ({ qux })))
 
     const result = selector.modify({ bar: { qux: 1 } }, x => x + 1)
     
@@ -64,8 +64,8 @@ describe("Selector", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number | null }
 
-    const selector = Selector.fromGetSet<Foo, Bar, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(MaybeSelector.fromGetSet<Bar, number, {}>(bar => bar.qux, (bar, _, qux) => ({ qux })))
+    const selector = Selector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(MaybeSelector.fromGetSet<Bar, number>(bar => bar.qux, (bar, _, qux) => ({ qux })))
 
     const result = selector.modify({ bar: { qux: 1 } }, x => x + 1)
     expect(result).to.deep.equal({ bar: { qux: 2 } })
@@ -77,8 +77,8 @@ describe("Selector", () => {
   it("composes with Converter", () => {
     interface Foo { bar: string }
 
-    const selector = Selector.fromGetSet<Foo, string, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
-      .compose(Converter.fromGets<string, string[], {}>(str => str.split(''), list => list.join('')))
+    const selector = Selector.fromGetSet<Foo, string>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(Converter.fromGets<string, string[]>(str => str.split(''), list => list.join('')))
 
     const result = selector.modify({ bar: "foo" }, str => str.reverse())
     
@@ -93,7 +93,7 @@ describe("Selector", () => {
       return isNaN(num) ? null : num
     }
 
-    const maybeSelector = Selector.fromGetSet<Foo, string, {}>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = Selector.fromGetSet<Foo, string>(foo => foo.bar, (foo, _, bar) => ({ bar }))
       .compose(MaybeConverter.fromGets(parseNum, num => num.toString()))
 
     const result = maybeSelector.modify({ bar: "1" }, x => x + 1)

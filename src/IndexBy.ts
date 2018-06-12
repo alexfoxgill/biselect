@@ -3,7 +3,7 @@ import { Selector } from "./Selector";
 import { Get } from "./Get";
 import { Set } from "./Set";
 
-export type IndexBy<A, B, Params> =
+export type IndexBy<A, B, Params extends {} = {}> =
   B extends { [key: string]: infer C }
   ? <K extends string>(key: K) => MaybeSelector<A, C, Params & { [Key in K]: string }>
   : never
