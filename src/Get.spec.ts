@@ -33,6 +33,29 @@ describe("Get", () => {
     expect(result).to.equal("1")
   })
 
+  it("combines with another Get", () => {
+    interface Foo {
+      bar: Bar
+      sha: Sha
+    }
+
+    interface Bar {
+      qux: number
+    }
+
+    interface Sha {
+      pow: string
+    }
+
+    const getBar = Get.create((foo: Foo) => foo.bar)
+    const getSha = Get.create((foo: Foo) => foo.sha)
+    const combined = getBar.combine(getSha)
+
+    const result = combined({ bar: { qux: 1 }, sha: { pow: "a" }})
+
+    expect(result).to.deep.equal({ qux: 1, pow: "a" })
+  })
+
   it("composes with Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
