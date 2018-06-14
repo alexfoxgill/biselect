@@ -2,6 +2,8 @@
 
 Two-way selectors for Redux-like applications, TypeScript-first.
 
+[Documentation](https://github.com/alexfoxgill/biselect/wiki)
+
 ## Motivation
 
 Redux store shape is defined by reducers - but the `connect` method in redux gives selectors the whole store to choose props from, meaning we need to duplicate the store shape there too. And in some cases, reducers use selectors to get the state of the store before modifying it.
@@ -68,6 +70,10 @@ Or just chain functions:
 ```typescript
 const userNameSelector = Biselect.from<Users>().indexBy('userId').prop('name')
 ```
+
+## Documentation
+
+For detailed documentation, please [visit the wiki](https://github.com/alexfoxgill/biselect/wiki)
 
 ## Isn't this just Lenses with another name?
 
