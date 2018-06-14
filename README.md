@@ -54,6 +54,12 @@ userNameSelector.modify(users, name => name.split('').reverse().join(''), { user
 // { "006": { name: { "Alec Trevelyan" }, "007": { name: "dnoB semaJ" }}
 ```
 
+Or just chain functions:
+
+```typescript
+const userNameSelector = Biselect.from<Users>().indexBy('userId').prop('name')
+```
+
 ## Isn't this just Lenses with another name?
 
 Mostly. Lenses do not have a secondary "parameter" argument like Selectors do, and the general field of Optics is entrenched in opaque FP terminology. This library is an attempt to bridge the gap between useful functional concepts and the pragmatic needs of everyday programming.
