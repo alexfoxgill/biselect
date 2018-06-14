@@ -83,6 +83,29 @@ describe("MaybeSelector", () => {
     })
   })
 
+  describe(".indexBy()", () => {
+    it("returns a MaybeSelector even if a default value is provided", () => {
+      type Lookup = {
+        [key: string]: number
+      }
+
+      const selector = MaybeSelector.fromGetSet<Lookup[], Lookup>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
+        .indexBy('key', 0)
+
+      const nullResult = selector.get([], { key: "a" })
+      expect(nullResult).to.be.null
+
+      const defaultResult = selector.get([{ b: 1 }], { key: "a" })
+      expect(defaultResult).to.equal(0)
+
+      const nullModification = selector.modify([], { key: "a" }, x => x + 1)
+      expect(nullModification).to.deep.equal([])
+
+      const defaultModification = selector.modify([ { b: 1 } ], { key: "a" }, x => x + 1)
+      expect(defaultModification).to.deep.equal([ { b: 1, a: 1 } ])
+    })
+  })
+
   it("composes with Get", () => {
     interface Foo { bar: Bar | null }
     interface Bar { qux: number }

@@ -17,7 +17,7 @@ export interface Root<A> {
 
 export namespace Root {
   export const create = <A>(ext: Extension = Extension.none): Root<A> => ({
-    indexBy: (key: string) => IndexBy.create(key).extend(ext),
+    indexBy: (key: string, defaultValue?: any) => IndexBy.create(key, defaultValue).extend(ext),
     prop: (...props: string[]) => Prop.many(...props).extend(ext),
     choose: <B extends A>(typeGuard: (a: A) => a is B) => Choose.create(typeGuard).extend(ext),
     extend: (newExt: Extension) => create<A>(Extension.combine(ext, newExt)),

@@ -5,17 +5,41 @@ import { Set } from "./Set";
 
 export type IndexBy<A, B, Params extends {} = {}> =
   B extends { [key: string]: infer C }
-  ? <K extends string>(key: K) => MaybeSelector<A, C, Params & { [Key in K]: string }>
+  ? IndexByOverloads<A, C, Params>
   : never
+
+export interface IndexByOverloads<A, C, Params> {
+  <K extends string>(key: K): MaybeSelector<A, C, Params & { [Key in K]: string }>
+  <K extends string>(key: K, defaultValue: C): Selector<A, C, Params & { [Key in K]: string }>
+}
+
+export type IndexByMaybe<A, B, Params extends {} = {}> =
+  B extends { [key: string]: infer C }
+  ? IndexByMaybeOverloads<A, C, Params>
+  : never
+
+export interface IndexByMaybeOverloads<A, C, Params> {
+  <K extends string>(key: K): MaybeSelector<A, C, Params & { [Key in K]: string }>
+  <K extends string>(key: K, defaultValue: C): MaybeSelector<A, C, Params & { [Key in K]: string }>
+}
 
 export namespace IndexBy {
   const nullIfUndefined = <T>(x: T) => x === undefined ? null : x
 
-  export const create = <A extends { [key: string]: B }, B, K extends string>(key: K): MaybeSelector<A, B, { [Key in K]: string }> =>
-    MaybeSelector.create<A, B, { [Key in K]: string }>(
+  export function create<A extends { [key: string]: B }, B, K extends string>(key: K): MaybeSelector<A, B, { [Key in K]: string }>
+  export function create<A extends { [key: string]: B }, B, K extends string>(key: K, defaultValue: B): Selector<A, B, { [Key in K]: string }>
+  export function create<A extends { [key: string]: B }, B, K extends string>(key: K, defaultValue?: B) {
+    const selector = MaybeSelector.create<A, B, { [Key in K]: string }>(
       Get.create((a, params) => nullIfUndefined(a[params[key]])),
       Set.create((a, params, b) => ({ ...a as any, [params[key]]: b })))
 
+    if (defaultValue === undefined) {
+      return selector
+    } else {
+      return selector.withDefaultValue(defaultValue)
+    }
+  }
+
   export const implementation = (compose: (indexBy: any) => any): any =>
-    (key: any) => compose(create(key))
+    (key: any, defaultValue: any) => compose(create(key, defaultValue))
 }

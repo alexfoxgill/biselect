@@ -35,6 +35,25 @@ describe("Selector", () => {
     expect(result).to.deep.equal({ bar: 2 })
   })
 
+  describe(".indexBy()", () => {
+    it("returns a Selector if a default value is provided", () => {
+      interface Foo {
+        lookup: Lookup
+      }
+      type Lookup = {
+        [key: string]: number
+      }
+
+      const selector = Selector.fromGetSet<Foo, Lookup>(foo => foo.lookup, (foo, _, lookup) => ({ lookup }))
+        .indexBy('key', 0)
+
+      const defaultResult = selector.get({ lookup: { b: 1 } }, { key: "a" })
+      expect(defaultResult).to.equal(0)
+
+      const defaultModification = selector.modify({ lookup: { b: 1 } }, { key: "a" }, x => x + 1)
+      expect(defaultModification).to.deep.equal({ lookup: { b: 1, a: 1 } })
+    })
+  })
 
   it("composes with Get", () => {
     interface Foo { bar: Bar }
