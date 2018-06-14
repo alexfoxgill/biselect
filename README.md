@@ -8,6 +8,15 @@ Redux store shape is defined by reducers - but the `connect` method in redux giv
 
 Wouldn't it be easier if selectors defined the shape of the store, and let you modify as well as retrieve data?
 
+## Features
+
+* Intuitive fluent API for building transformations
+* Strong typing so faulty configurations fail at compile-time
+* Built-in parameterisation of selectors
+* Extension mechanism for adding functionality
+* Memoization
+* Deep equality testing for updates - only return new object references when necessary
+
 ## Examples
 
 Select a property of an object:
@@ -63,3 +72,5 @@ const userNameSelector = Biselect.from<Users>().indexBy('userId').prop('name')
 ## Isn't this just Lenses with another name?
 
 Mostly. Lenses do not have a secondary "parameter" argument like Selectors do, and the general field of Optics is entrenched in opaque FP terminology. This library is an attempt to bridge the gap between useful functional concepts and the pragmatic needs of everyday programming.
+
+That said, credit must go to the functional programming community for inventing (discovering?) these concepts, in particular the [Monocle](https://github.com/julien-truffaut/Monocle) library for Scala which introduced them to the author.
