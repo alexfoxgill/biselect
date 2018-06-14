@@ -29,9 +29,9 @@ export namespace IndexBy {
   export function create<A extends { [key: string]: B }, B, K extends string>(key: K): MaybeSelector<A, B, { [Key in K]: string }>
   export function create<A extends { [key: string]: B }, B, K extends string>(key: K, defaultValue: B): Selector<A, B, { [Key in K]: string }>
   export function create<A extends { [key: string]: B }, B, K extends string>(key: K, defaultValue?: B) {
-    const selector = MaybeSelector.create<A, B, { [Key in K]: string }>(
-      Get.create((a, params) => nullIfUndefined(a[params[key]])),
-      Set.create((a, params, b) => ({ ...a as any, [params[key]]: b })))
+    const selector = MaybeSelector.fromGetSet<A, B, { [Key in K]: string }>(
+      (a, params) => nullIfUndefined(a[params[key]]),
+      (a, params, b) => ({ ...a as any, [params[key]]: b }))
 
     if (defaultValue === undefined) {
       return selector

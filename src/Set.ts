@@ -1,6 +1,7 @@
 import { Get } from './Get'
 import { Extension } from './Extension';
 import { Debug } from './Debug';
+import * as DeepEqual from 'fast-deep-equal'
 
 export type SetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -28,7 +29,12 @@ export namespace Set {
   export const create = <A, B, Params extends {} = {}>(set: (a: A, p: Params, b: B) => A, ext: Extension = Extension.none): Set<A, B, Params> => {
     const clone: any = (...args: any[]) => clone._underlying(...args)
     clone.type = "set"
-    clone._underlying = normaliseArgs(set)
+    clone._equality = DeepEqual
+    clone._underlying = normaliseArgs((a: A, p: Params, b: B) => {
+      const result = set(a, p, b)
+      // if the update had no effect, don't change the object reference
+      return clone._equality(a, result) ? a : result
+    })
 
     clone.extend = (newExtension: Extension) => 
       create(set, Extension.combine(ext, newExtension))

@@ -31,4 +31,14 @@ describe("Set", () => {
     expect(result).to.deep.equal({ bar: 11})
   })
 
+  it("doesn't change object references if the update is a no-op", () => {
+    interface Foo { bars: Bar[] }
+    interface Bar { qux: number }
+
+    const set = Set.create<Foo, Bar[]>((foo, _, bars) => ({ bars }))
+
+    const foo = { bars: [{ qux: 1 }, { qux: 2 }] }
+    const result = set(foo, [{ qux: 1 }, { qux: 2 }])
+    expect(result).to.equal(foo)
+  })
 })
