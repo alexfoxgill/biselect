@@ -41,7 +41,13 @@ export type MaybeSelector<A, B, Params extends {} = {}> = {
 
 export namespace MaybeSelector {
   export const fromGetSet = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B | null, set: (a: A, p: Params, b: B) => A) =>
-    create(Get.create(get), Set.create(set))
+    create(Get.create(convertUndefinedToNull(get)), Set.create(set))
+
+  const convertUndefinedToNull = <A, B, Params>(get: (a: A, p: Params) => B) =>
+    (a: A, p: Params) => {
+      const result = get(a, p)
+      return result === undefined ? null : result
+    }
 
   export const create = <A, B, Params extends {} = {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): MaybeSelector<A, B, Params> => {
     get = get.extend(ext)
@@ -77,7 +83,7 @@ export namespace MaybeSelector {
       const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
       return Selector.create<A, B, Params>(Get.create((a, p) => {
         const b = get._underlying(a, p)
-        return b === null || b === undefined ? ifNullGet._underlying(a, p): b
+        return b === null ? ifNullGet._underlying(a, p): b
       }, ext), set, ext)
     }
 

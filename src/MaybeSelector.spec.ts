@@ -9,36 +9,33 @@ import { MaybeConverter } from './MaybeConverter';
 describe("MaybeSelector", () => {
 
   it("gets", () => {
-    interface Foo { bar: number | null }
-    const selector = MaybeSelector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
 
-    const result = selector.get({ bar: 1 })
+    const result = maybeSelector.get([1, 2])
     expect(result).to.equal(1)
 
-    const nullResult = selector.get({ bar: null })
+    const nullResult = maybeSelector.get([])
     expect(nullResult).to.equal(null)
   })
 
   it("sets", () => {
-    interface Foo { bar: number | null }
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
 
-    const result = maybeSelector.set({ bar: 1 }, 2)
-    expect(result).to.deep.equal({ bar: 2 })
+    const result = maybeSelector.set([1, 2], 3)
+    expect(result).to.deep.equal([3, 2])
     
-    const nullResult = maybeSelector.set({ bar: null }, 2)
-    expect(nullResult).to.deep.equal({ bar: 2 })
+    const nullResult = maybeSelector.set([], 2)
+    expect(nullResult).to.deep.equal([2])
   })
   
   it("modifies", () => {
-    interface Foo { bar: number | null }
-    const maybeSelector = MaybeSelector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+    const maybeSelector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
 
-    const result = maybeSelector.modify({ bar: 1 }, x => x + 1)
-    expect(result).to.deep.equal({ bar: 2 })
+    const result = maybeSelector.modify([2, 3], x => x + 1)
+    expect(result).to.deep.equal([3, 3])
     
-    const nullResult = maybeSelector.modify({ bar: null }, x => x + 1)
-    expect(nullResult).to.deep.equal({ bar: null })
+    const nullResult = maybeSelector.modify([], x => x + 1)
+    expect(nullResult).to.deep.equal([])
   })
 
   describe(".withDefault[Value]()", () => {
