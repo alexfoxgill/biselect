@@ -12,12 +12,12 @@ Wouldn't it be easier if selectors defined the shape of the store, and let you m
 
 ## Features
 
-* Intuitive fluent API for building transformations
-* Strong typing so faulty configurations fail at compile-time
-* Built-in parameterisation of selectors
-* Extension mechanism for adding functionality
-* Memoization
-* Deep equality testing for updates - only return new object references when necessary
+* Intuitive **fluent API** for building transformations
+* **Strong typing** so faulty configurations fail at compile-time
+* Built-in **parameterisation** of selectors
+* **Extension** mechanism for adding functionality
+* Avoid rerendering with built-in **Memoization** extension
+* Deep equality testing for updates - only return **new object references when necessary**
 
 ## Examples
 
