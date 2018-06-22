@@ -20,7 +20,7 @@ export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
 }
 
-export type MaybeSelector<A, B, Params extends {} = {}> = {
+export interface MaybeSelector<A, B, Params extends {} = {}> {
   type: "maybeSelector"
   extend: (ext: Extension) => MaybeSelector<A, B, Params>
 

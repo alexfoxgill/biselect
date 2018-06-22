@@ -21,7 +21,7 @@ export interface GetCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): Get<A, C, Params & BCParams>
 }
 
-export type Get<A, B, Params extends {}> = GetSignature<A, B, Params> & {
+export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
   type: "get"
   _underlying: (a: A, params: Params) => B
   extend: (ext: Extension) => Get<A, B, Params>

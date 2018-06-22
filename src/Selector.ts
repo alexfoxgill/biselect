@@ -20,7 +20,7 @@ export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): Selector<A, C, Params & BCParams>
 }
 
-export type Selector<A, B, Params extends {} = {}> = {
+export interface Selector<A, B, Params extends {} = {}> {
   type: "selector"
   extend: (ext: Extension) => Selector<A, B, Params>
   get: Get<A, B, Params>
