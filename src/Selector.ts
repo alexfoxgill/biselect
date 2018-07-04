@@ -11,6 +11,7 @@ import { Choose } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
+import { Subtract } from './util'
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -33,6 +34,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Selector<A, B, P2>
+  withParams: <P2 extends Partial<Params>>(params: P2) => Selector<A, B, Subtract<Params, P2>>
   memoize: () => Selector<A, B, Params>
   debug: () => Selector<A, B, Params>
 }
@@ -71,6 +73,7 @@ export namespace Selector {
     const merge = modify.merge
     const deepMerge = modify.deepMerge
     const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
+    const withParams = <P2 extends Partial<Params>>(params: P2) => create(get.withParams(params), set.withParams(params), ext)
 
     const selector: Selector<A, B, Params> = {
       type: "selector",
@@ -85,6 +88,7 @@ export namespace Selector {
       merge,
       deepMerge,
       mapParams,
+      withParams,
       memoize: () => extend(Memoize()),
       debug: () => extend(Debug())
     }

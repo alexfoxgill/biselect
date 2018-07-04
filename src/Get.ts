@@ -7,6 +7,7 @@ import { GetPropOverloads, Prop } from './Prop'
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
+import { Subtract, combine } from './util';
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -31,6 +32,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
   combine: <C, BCParams>(other: Get<A, C, BCParams>) => Get<A, B & C, Params & BCParams>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
+  withParams: <P2 extends Partial<Params>>(params: P2) => Get<A, B, Subtract<Params, P2>>
   memoize: () => Get<A, B, Params>
   debug: () => Get<A, B, Params>
 }
@@ -66,6 +68,9 @@ export namespace Get {
 
     clone.mapParams = <P2>(map: (p2: P2) => Params) =>
       create<A, B, P2>((a, p) => clone(a, map(p)), ext)
+
+    clone.withParams = <P2 extends Partial<Params>>(params: P2): Get<A, B, Subtract<Params, P2>> =>
+      create<A, B, Subtract<Params, P2>>((a, p) => clone(a, combine(p, params)))
 
     clone.memoize = () => clone.extend(Memoize())
     clone.debug = () => clone.extend(Debug())

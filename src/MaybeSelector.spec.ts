@@ -5,6 +5,8 @@ import { Get } from './Get';
 import { MaybeSelector } from './MaybeSelector';
 import { Converter } from './Converter';
 import { MaybeConverter } from './MaybeConverter';
+import { IndexBy } from './IndexBy';
+import { Biselect } from '.';
 
 describe("MaybeSelector", () => {
 
@@ -49,6 +51,38 @@ describe("MaybeSelector", () => {
         .modify([1, 2, 3], { pos: 1 }, x => x + 5)
       
       expect(result).to.deep.equal([1, 7, 3])
+    })
+  })
+
+  describe(".withParams()", () => {
+    it("presupplies parameters", () => {
+      type Foo = {
+        [x: string]: number
+      }
+
+      const selector = Biselect.from<Foo>()
+        .indexBy('x')
+        .withParams({ x: "a" })
+
+      const result = selector.get({ "a": 1 })
+      expect(result).to.equal(1)
+    })
+
+    it("can have different parameters with the same name supplied", () => {
+      type Foo = {
+        [x: string]: {
+          [x: string]: number
+        }
+      }
+
+      const selector = Biselect.from<Foo>()
+        .indexBy('x')
+        .withParams({ x: "a" })
+        .indexBy('x')
+        .withParams({ x: "b" })
+
+      const result = selector.modify({ a: { b: 1 } }, num => num + 1)
+      expect(result).to.deep.equal({ a: { b: 2 }})
     })
   })
 

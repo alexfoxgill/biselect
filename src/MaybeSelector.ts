@@ -11,6 +11,7 @@ import { Choose } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
+import { Subtract } from './util';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -34,6 +35,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeSelector<A, B, P2>
+  withParams: <P2 extends Partial<Params>>(params: P2) => MaybeSelector<A, B, Subtract<Params, P2>>
   withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Selector<A, B, Params>
   withDefaultValue: (ifNull: B) => Selector<A, B, Params>
   memoize: () => MaybeSelector<A, B, Params>
@@ -80,6 +82,7 @@ export namespace MaybeSelector {
     const merge = modify.merge
     const deepMerge = modify.deepMerge
     const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
+    const withParams = <P2 extends Partial<Params>>(params: P2) => create(get.withParams(params), set.withParams(params), ext)
 
     const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> => {
       const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
@@ -105,6 +108,7 @@ export namespace MaybeSelector {
       merge,
       deepMerge,
       mapParams,
+      withParams,
       withDefault,
       withDefaultValue,
       memoize: () => extend(Memoize()),

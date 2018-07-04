@@ -48,6 +48,20 @@ describe("Selector", () => {
     })
   })
 
+  describe(".withParams()", () => {
+    it("supplies the given parameters", () => {
+      interface Foo { bar: number }
+      const selector = Selector.fromGetSet<Foo, number, { x: number, y: number }>(
+        (foo, {x, y}) => foo.bar + (x * y),
+        (foo, {x, y}, bar) => ({ bar: bar - (x * y) }))
+
+      const ySupplied = selector.withParams({ y: 2 })
+
+      const result = ySupplied.get({ bar: 1 }, { x: 5 })
+      expect(result).to.equal(11)
+    })
+  })
+
   describe(".indexBy()", () => {
     it("returns a Selector if a default value is provided", () => {
       interface Foo {

@@ -2,6 +2,7 @@ import { Get } from './Get'
 import { Extension } from './Extension';
 import { Debug } from './Debug';
 import * as DeepEqual from 'fast-deep-equal'
+import { Subtract, combine } from './util';
 
 export type SetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -15,6 +16,7 @@ export type Set<A, B, Params extends {}> = SetSignature<A, B, Params> & {
 
   compose: <C, BCParams>(get: Get<C, B, BCParams>) => Set<A, C, Params & BCParams>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Set<A, B, P2>
+  withParams: <P2 extends Partial<Params>>(params: P2) => Set<A, B, Subtract<Params, P2>>
   debug: () => Set<A, B, Params>
 }
 
@@ -45,6 +47,9 @@ export namespace Set {
 
     clone.mapParams = <P2>(map: (p2: P2) => Params) =>
       create<A, B, P2>((a, p, b) => clone(a, map(p), b))
+
+    clone.withParams = <P2 extends Partial<Params>>(params: P2): Set<A, B, Subtract<Params, P2>> =>
+      create<A, B, Subtract<Params, P2>>((a, p, b) => clone(a, combine(p, params), b))
 
     clone.debug = () => clone.extend(Debug())
 
