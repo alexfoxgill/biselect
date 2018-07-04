@@ -38,6 +38,20 @@ describe("MaybeSelector", () => {
     expect(nullResult).to.deep.equal([])
   })
 
+  describe(".mapParams()", () => {
+    it("maps parameter object", () => {
+      const indexSelector = MaybeSelector.fromGetSet<number[], number, { index: number }>(
+        (list, {index}) => list[index],
+        (list, {index}, x) => [...list.slice(0, index), x, ...list.slice(index + 1)])
+
+      const result = indexSelector
+        .mapParams<{ pos: number }>(({pos}) => ({ index: pos }))
+        .modify([1, 2, 3], { pos: 1 }, x => x + 5)
+      
+      expect(result).to.deep.equal([1, 7, 3])
+    })
+  })
+
   describe(".withDefault[Value]()", () => {
     it("ignores the default if the value is found", () => {
       const selector = MaybeSelector.fromGetSet<number[], number>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
@@ -55,7 +69,7 @@ describe("MaybeSelector", () => {
       expect(result).to.equal(1)
     })
     
-    it("calls the provided default function with the correc arguments if null is found", () => {
+    it("calls the provided default function with the correct arguments if null is found", () => {
       const selector = MaybeSelector.fromGetSet<number[], number, { param: number }>(list => list[0], (list, _, x) => [x, ...list.slice(1)])
         .withDefault((list, { param }) => param)
 

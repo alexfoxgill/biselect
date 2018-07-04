@@ -37,6 +37,7 @@ export type Modify<A, B, Params extends {} = {}> = ModifySignature<A, B, Params>
   compose: ModifyCompose<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
+  mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Modify<A, B, P2>
   memoize: () => Modify<A, B, Params>
   debug: () => Modify<A, B, Params>
 }
@@ -71,6 +72,9 @@ export namespace Modify {
   
     clone.deepMerge = normaliseArgs((a: A, params: Params, someB: DeepPartial<B>): A =>
       clone(a, params, (b: B) => DeepPartial.merge(b, someB)))
+
+    clone.mapParams = <P2>(map: (p2: P2) => Params) =>
+      create<A, B, P2>((a, p, f) => clone(a, map(p), f), ext)
 
     clone.memoize = () => clone.extend(Memoize())
     clone.debug = () => clone.extend(Debug())

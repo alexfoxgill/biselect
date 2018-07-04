@@ -21,6 +21,17 @@ describe("Set", () => {
     expect(result).to.deep.equal({ bar: 12 })
   })
 
+  describe(".mapParams()", () => {
+    it("maps parameter object", () => {
+      interface Foo { bar: number }
+      const set = Set.create<Foo, number, { add: number }>((foo, p, bar) => ({ bar: bar + p.add }))
+        .mapParams<{ toAdd: number }>(({toAdd}) => ({ add: toAdd }))
+      const result = set({ bar: 1 }, { toAdd: 10 }, 2)
+      
+      expect(result).to.deep.equal({ bar: 12 })
+    })
+  })
+
   it("composes with Get", () => {
     interface Foo { bar: number }
     const set = Set.create<Foo, number>((foo, p, bar) => ({ bar }))

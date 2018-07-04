@@ -64,6 +64,17 @@ describe("Modify", () => {
     expect(result).to.deep.equal({ bar: { qux: 1, sha: { pow: "pow", ping: 2 } } })
   })
 
+  describe(".mapParams()", () => {
+    it("maps parameter object", () => {
+      interface Foo { bar: number }
+      const modify = Modify.create<Foo, number, { param: number }>((foo, p, f) => ({ bar: f(foo.bar) }))
+        .mapParams<{ x: number }>(({x}) => ({ param: x }))
+  
+      const result = modify({ bar: 1 }, { x: 1 }, x => x + 1)
+      expect(result).to.deep.equal({ bar: 2 })
+    })
+  })
+
   it("composes with another Modify", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }

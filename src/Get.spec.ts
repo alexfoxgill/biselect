@@ -33,6 +33,22 @@ describe("Get", () => {
     expect(result).to.equal("1")
   })
 
+  describe(".mapParams()", () => {
+    it("maps parameter object", () => {
+      interface Params1 {
+        x: number
+      }
+      interface Params2 {
+        y: number
+      }
+      const get = Get.create<number, number, Params1>((num, p) => num + p.x)
+        .mapParams<Params2>(p2 => ({ x: p2.y }))
+  
+      const result = get(1, { y: 2 })
+      expect(result).to.equal(3)
+    })
+  })
+
   it("combines with another Get", () => {
     interface Foo {
       bar: Bar

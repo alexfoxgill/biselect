@@ -33,6 +33,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
+  mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeSelector<A, B, P2>
   withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Selector<A, B, Params>
   withDefaultValue: (ifNull: B) => Selector<A, B, Params>
   memoize: () => MaybeSelector<A, B, Params>
@@ -78,6 +79,7 @@ export namespace MaybeSelector {
     const choose = Choose.implementation(compose)
     const merge = modify.merge
     const deepMerge = modify.deepMerge
+    const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
 
     const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> => {
       const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
@@ -102,6 +104,7 @@ export namespace MaybeSelector {
       choose,
       merge,
       deepMerge,
+      mapParams,
       withDefault,
       withDefaultValue,
       memoize: () => extend(Memoize()),

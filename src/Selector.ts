@@ -32,6 +32,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
+  mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Selector<A, B, P2>
   memoize: () => Selector<A, B, Params>
   debug: () => Selector<A, B, Params>
 }
@@ -69,6 +70,7 @@ export namespace Selector {
     const choose = Choose.implementation(compose)
     const merge = modify.merge
     const deepMerge = modify.deepMerge
+    const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
 
     const selector: Selector<A, B, Params> = {
       type: "selector",
@@ -82,6 +84,7 @@ export namespace Selector {
       choose,
       merge,
       deepMerge,
+      mapParams,
       memoize: () => extend(Memoize()),
       debug: () => extend(Debug())
     }

@@ -35,6 +35,19 @@ describe("Selector", () => {
     expect(result).to.deep.equal({ bar: 2 })
   })
 
+  describe(".mapParams()", () => {
+    it("maps parameter object", () => {
+      interface Foo { bar: number }
+      const selector = Selector.fromGetSet<Foo, number, { param: number }>(
+        (foo, {param}) => foo.bar + param,
+        (foo, {param}, bar) => ({ bar: bar - param }))
+        .mapParams<{ x: number }>(({x}) => ({ param: x }))
+
+      const result = selector.get({ bar: 1 }, { x: 1 })
+      expect(result).to.equal(2)
+    })
+  })
+
   describe(".indexBy()", () => {
     it("returns a Selector if a default value is provided", () => {
       interface Foo {

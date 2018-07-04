@@ -14,6 +14,7 @@ export type Set<A, B, Params extends {}> = SetSignature<A, B, Params> & {
   extend: (ext: Extension) => Set<A, B, Params>
 
   compose: <C, BCParams>(get: Get<C, B, BCParams>) => Set<A, C, Params & BCParams>
+  mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Set<A, B, P2>
   debug: () => Set<A, B, Params>
 }
 
@@ -41,6 +42,9 @@ export namespace Set {
 
     clone.compose = <C, BCParams>(get: Get<C, B, BCParams>) =>
       create<A, C, Params & BCParams>((a, p, c) => clone._underlying(a, p, get._underlying(c, p)), ext)
+
+    clone.mapParams = <P2>(map: (p2: P2) => Params) =>
+      create<A, B, P2>((a, p, b) => clone(a, map(p), b))
 
     clone.debug = () => clone.extend(Debug())
 
