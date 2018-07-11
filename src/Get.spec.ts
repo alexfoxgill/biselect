@@ -24,13 +24,24 @@ describe("Get", () => {
     expect(result).to.equal("10")
   })
 
-  it("can map the result", () => {
-    const get = Get.create((num: number) => num.toString())
-      .map(str => str[0])
+  describe(".map()", () => {
+    it("can map the result", () => {
+      const get = Get.create((num: number) => num.toString())
+        .map(str => str[0])
 
-    const result = get(12)
+      const result = get(12)
 
-    expect(result).to.equal("1")
+      expect(result).to.equal("1")
+    })
+
+    it("passes params", () => {
+      const get = Get.create((num: number, params: string) => num.toString())
+        .map((str, params) => str + params)
+
+      const result = get(12, "3")
+
+      expect(result).to.equal("123")
+    })
   })
 
   describe(".mapParams()", () => {

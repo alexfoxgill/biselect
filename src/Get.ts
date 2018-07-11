@@ -28,7 +28,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
   extend: (ext: Extension) => Get<A, B, Params>
 
   compose: GetCompose<A, B, Params>
-  map: <C>(f: (b: B) => C) => Get<A, C, Params>
+  map: <C>(f: (b: B, p: Params) => C) => Get<A, C, Params>
   combine: <C, BCParams>(other: Get<A, C, BCParams>) => Get<A, B & C, Params & BCParams>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
@@ -58,8 +58,8 @@ export namespace Get {
       }
     }
 
-    clone.map = <C>(f: (b: B) => C): Get<A, C, Params> =>
-      Get.create((a, p) => f(clone(a, p)), ext)
+    clone.map = <C>(f: (b: B, p: Params) => C): Get<A, C, Params> =>
+      Get.create((a, p) => f(clone(a, p), p), ext)
 
     clone.combine = <C, BCParams>(other: Get<A, C, BCParams>): Get<A, B & C, Params & BCParams> =>
       Get.create((a, p) => ({ ...clone._underlying(a, p), ...other._underlying(a, p) as any }))
