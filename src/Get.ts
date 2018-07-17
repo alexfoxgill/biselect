@@ -22,6 +22,12 @@ export interface GetCompose<A, B, Params> {
   <C, BCParams>(other: Converter<B, C, BCParams>): Get<A, C, Params & BCParams>
 }
 
+export interface GetCombine<A, B, Params> {
+  <C, ACParams>(other: Get<A, C, ACParams>): Get<A, [B, C], Params & ACParams>
+  <C, ACParams, D, ADParams>(ac: Get<A, C, ACParams>, ad: Get<A, D, ADParams>): Get<A, [B, C, D], Params & ACParams & ADParams>
+  <C, ACParams, D, ADParams, E, AEParams>(ac: Get<A, C, ACParams>, ad: Get<A, D, ADParams>, ae: Get<A, E, AEParams>): Get<A, [B, C, D, E], Params & ACParams & ADParams & AEParams>
+}
+
 export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
   type: "get"
   _underlying: (a: A, params: Params) => B
@@ -29,7 +35,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
 
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => Get<A, C, Params>
-  combine: <C, BCParams>(other: Get<A, C, BCParams>) => Get<A, B & C, Params & BCParams>
+  combine: GetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
   withParams: <P2 extends Partial<Params>>(params: P2) => Get<A, B, Subtract<Params, P2>>
@@ -61,8 +67,8 @@ export namespace Get {
     clone.map = <C>(f: (b: B, p: Params) => C): Get<A, C, Params> =>
       Get.create((a, p) => f(clone(a, p), p), ext)
 
-    clone.combine = <C, BCParams>(other: Get<A, C, BCParams>): Get<A, B & C, Params & BCParams> =>
-      Get.create((a, p) => ({ ...clone._underlying(a, p), ...other._underlying(a, p) as any }))
+    clone.combine = (...others: Get<A, any, any>[]) =>
+      Get.create((a: A, p) => [clone(a, p), ...others.map(x => x._underlying(a, p))])
 
     clone.prop = Prop.implementation(clone.compose)
 

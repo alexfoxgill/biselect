@@ -60,27 +60,42 @@ describe("Get", () => {
     })
   })
 
-  it("combines with another Get", () => {
-    interface Foo {
-      bar: Bar
-      sha: Sha
-    }
+  describe(".combine()", () => {
+    it("combines with another Get", () => {
+      interface Foo {
+        bar: number
+        sha: string
+      }
 
-    interface Bar {
-      qux: number
-    }
+      const getBar = Get.create((foo: Foo) => foo.bar)
+      const getSha = Get.create((foo: Foo) => foo.sha)
+      const combined = getBar.combine(getSha)
 
-    interface Sha {
-      pow: string
-    }
+      const result = combined({ bar: 1, sha: "a" })
 
-    const getBar = Get.create((foo: Foo) => foo.bar)
-    const getSha = Get.create((foo: Foo) => foo.sha)
-    const combined = getBar.combine(getSha)
+      expect(result).to.deep.equal([1, "a"])
+    })
 
-    const result = combined({ bar: { qux: 1 }, sha: { pow: "a" }})
+    it("combines with several other Gets", () => {
+      interface Foo {
+        bar: number
+        sha: string
+        qux: boolean
+        date: Date
+      }
 
-    expect(result).to.deep.equal({ qux: 1, pow: "a" })
+      const getBar = Get.create((foo: Foo) => foo.bar)
+      const getSha = Get.create((foo: Foo) => foo.sha)
+      const getQux = Get.create((foo: Foo) => foo.qux)
+      const getDate = Get.create((foo: Foo) => foo.date)
+      const combined = getBar.combine(getSha, getQux, getDate)
+
+      const date = new Date()
+      const result = combined({ bar: 1, sha: "a", qux: false, date })
+
+      expect(result).to.deep.equal([1, "a", false, date])
+    })
+
   })
 
   it("composes with Get", () => {
