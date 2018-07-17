@@ -6,24 +6,24 @@ type StringProperty<K extends string> = { [Key in K]: string }
 
 export type IndexBy<A, B, Params extends {} = {}> =
   B extends { [key: string]: infer C }
-  ? IndexByOverloads<A, C, Params>
+  ? IndexByOverloads<A, B, C, Params>
   : never
 
-export interface IndexByOverloads<A, C, Params> {
+export interface IndexByOverloads<A, B, C, Params> {
   <K extends string>(key: K): MaybeSelector<A, C, Params & StringProperty<K>>
   <K extends string>(key: K, defaultValue: C): Selector<A, C, Params & StringProperty<K>>
-  <K extends string>(key: K, getDefault: GetSignature<A, C, Params & StringProperty<K>>): Selector<A, C, Params & StringProperty<K>>
+  <K extends string>(key: K, getDefault: GetSignature<B, C, Params & StringProperty<K>>): Selector<A, C, Params & StringProperty<K>>
 }
 
 export type IndexByMaybe<A, B, Params extends {} = {}> =
   B extends { [key: string]: infer C }
-  ? IndexByMaybeOverloads<A, C, Params>
+  ? IndexByMaybeOverloads<A, B, C, Params>
   : never
 
-export interface IndexByMaybeOverloads<A, C, Params> {
+export interface IndexByMaybeOverloads<A, B, C, Params> {
   <K extends string>(key: K): MaybeSelector<A, C, Params & StringProperty<K>>
   <K extends string>(key: K, defaultValue: C): MaybeSelector<A, C, Params & StringProperty<K>>
-  <K extends string>(key: K, getDefault: GetSignature<A, C, Params & StringProperty<K>>): MaybeSelector<A, C, Params & StringProperty<K>>
+  <K extends string>(key: K, getDefault: GetSignature<B, C, Params & StringProperty<K>>): MaybeSelector<A, C, Params & StringProperty<K>>
 }
 
 export namespace IndexBy {
