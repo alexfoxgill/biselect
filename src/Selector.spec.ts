@@ -80,6 +80,25 @@ describe("Selector", () => {
       const defaultModification = selector.modify({ lookup: { b: 1 } }, { key: "a" }, x => x + 1)
       expect(defaultModification).to.deep.equal({ lookup: { b: 1, a: 1 } })
     })
+
+    it("passes all parameters to the default value provider", () => {
+      interface Foo {
+        lookup: Lookup
+      }
+      type Lookup = {
+        [key: string]: {
+          pos: number
+          key: string
+        }
+      }
+
+      const selector = Selector.fromGetSet<Foo, Lookup, { pos: number }>(foo => foo.lookup, (foo, _, lookup) => ({ lookup }))
+        .indexBy('key', (_, { pos, key }) => ({ pos, key }))
+
+      const initialState: Foo = { lookup: {} }
+      const result = selector.get(initialState, { pos: 0, key: "a" })
+      expect(result).to.deep.equal({ pos: 0, key: "a" })
+    })
   })
 
   it("composes with Get", () => {

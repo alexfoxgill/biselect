@@ -26,6 +26,13 @@ describe("Root", () => {
     expect(result).to.equal(0)
   })
 
+  it("can create an index selector with a default getter", () => {
+    const selector = Root.create<{ [key: string]: number }>().indexBy('id', (_, { id }) => id.length)
+
+    const result = selector.get({ 'a': 1 }, { id: 'hello' })
+    expect(result).to.equal(5)
+  })
+
   it("can create a chooser", () => {
     const isString = (a: any): a is string => typeof a === "string"
     const maybeConverter = Root.create<string | number>().choose(isString)

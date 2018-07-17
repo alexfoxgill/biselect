@@ -149,6 +149,24 @@ describe("MaybeSelector", () => {
       const defaultModification = selector.modify([ { b: 1 } ], { key: "a" }, x => x + 1)
       expect(defaultModification).to.deep.equal([ { b: 1, a: 1 } ])
     })
+
+    it("passes all parameters to the default value provider", () => {
+      type Lookup = {
+        [key: string]: {
+          pos: number
+          key: string
+        }
+      }
+
+      const selector = MaybeSelector.fromGetSet<Lookup[], Lookup, { pos: number }>(
+        (list, {pos}) => list[pos], 
+        (list, {pos}, x) => [...list.slice(0, pos), x, ...list.slice(pos+1)])
+        .indexBy('key', (_, {pos, key}) => ({ pos, key }))
+
+      const initialState: Lookup[] = [{}]
+      const result = selector.get(initialState, { pos: 0, key: "a" })
+      expect(result).to.deep.equal({ pos: 0, key: "a" })
+    })
   })
 
   it("composes with Get", () => {
