@@ -152,9 +152,12 @@ describe("Users/Documents scenario", () => {
     const docId = todoTableDoc.id
     const userId = beatrice.id
 
-    const renameColumn = docSelector.choose(Doc.isTable).deepMerge({ table: { columns: [ "task", "is it done yet" ] } })
+    const tableSelector = docSelector.choose(Doc.isTable)
+    const docNameSelector = docSelector.prop('name')
+
+    const renameColumn = tableSelector.deepMerge({ table: { columns: [ "task", "is it done yet" ] } })
     const changeEmail = userSelector.merge({ email: '<redacted>@<redacted>.com' })
-    const setDocName = docSelector.prop('name').set("updated.doc")
+    const setDocName = docNameSelector.set("updated.doc")
     const modifyPermission = permissionSelector.modify(permissions => [...permissions, Permission.Read])
 
     const updated = renameColumn

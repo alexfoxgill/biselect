@@ -4,16 +4,16 @@ import { DeepPartial } from './DeepPartial';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
-import { UpdateChain } from './UpdateChain'
+import { Update } from './Update'
 
 
 export interface NoParamsModify<A, B> {
-  (f: (b: B) => B): UpdateChain<A>
+  (f: (b: B) => B): Update<A>
   (a: A, f: (b: B) => B): A
 }
 
 export interface ParamsModify<A, B, Params> {
-  (f: (b: B, params: Params) => B): UpdateChain<A, Params>
+  (f: (b: B, params: Params) => B): Update<A, Params>
   (a: A, p: Params, f: (b: B) => B): A
 }
 
@@ -30,7 +30,7 @@ export interface ModifyCompose<A, B, Params> {
 export type IfObject<A, B> = A extends object ? B : never
 
 export type Merge<A, B, Params extends {}> = IfObject<B,
-    ((b: Partial<B>) => UpdateChain<A, Params>)
+    ((b: Partial<B>) => Update<A, Params>)
     &
     ({} extends Params
       ? (a: A, someB: Partial<B>) => A
@@ -38,7 +38,7 @@ export type Merge<A, B, Params extends {}> = IfObject<B,
   >
 
 export type DeepMerge<A, B, Params extends {}> = IfObject<B,
-    ((b: DeepPartial<B>) => UpdateChain<A, Params>)
+    ((b: DeepPartial<B>) => Update<A, Params>)
     &
     ({} extends Params
       ? (a: A, b: DeepPartial<B>) => A
@@ -64,7 +64,7 @@ export namespace Modify {
       switch (arguments.length) {
         case 1:
           const update: (b: B, p: P) => B = a as any
-          return UpdateChain.create<A, P>((aa, pp) => modify(aa, pp, b => update(b, pp)))
+          return Update.create<A, P>((a, p) => modify(a, p, b => update(b, p)))
         case 2: return modify(a, undefined as any, p as any)
         default: return modify(a, p, f)
       }
@@ -91,7 +91,7 @@ export namespace Modify {
       switch (arguments.length) {
         case 1: {
           const someB = a as any as Partial<B>
-          return UpdateChain.create<A, Params>((aa, pp) => clone(aa, pp, (b: B) => ({ ...b as any, ...someB as any })))
+          return Update.create<A, Params>((a, p) => clone(a, p, (b: B) => ({ ...b as any, ...someB as any })))
         }
         case 2: {
           const someB = p as any as Partial<B>
@@ -106,7 +106,7 @@ export namespace Modify {
       switch (arguments.length) {
         case 1: {
           const someB = a as any as DeepPartial<B>
-          return UpdateChain.create<A, Params>((aa, pp) => clone(aa, pp, (b: B) => DeepPartial.merge(b, someB)))
+          return Update.create<A, Params>((a, p) => clone(a, p, (b: B) => DeepPartial.merge(b, someB)))
         }
         case 2: {
           const someB = p as any as DeepPartial<B>
