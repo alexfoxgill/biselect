@@ -95,7 +95,24 @@ describe("Get", () => {
 
       expect(result).to.deep.equal([1, "a", false, date])
     })
+  })
 
+  describe(".choose()", () => {
+    it("creates a new Get", () => {
+      interface Foo {
+        bar: string | number
+      }
+
+      const isString = (x: any): x is string => typeof x === "string"
+      const getBar = Get.create((foo: Foo) => foo.bar)
+      const chosen = getBar.choose(isString)
+
+      const stringResult = chosen({ bar: "hello" })
+      expect(stringResult).to.equal("hello")
+
+      const numberResult = chosen({ bar: 1 })
+      expect(numberResult).to.be.null
+    })
   })
 
   it("composes with Get", () => {

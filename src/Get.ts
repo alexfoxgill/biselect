@@ -8,6 +8,7 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, combine } from './util';
+import { Choose } from './Choose'
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -35,6 +36,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
 
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => Get<A, C, Params>
+  choose: <C extends B>(pred: (b: B) => b is C) => Get<A, C | null, Params> 
   combine: GetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
@@ -66,6 +68,8 @@ export namespace Get {
 
     clone.map = <C>(f: (b: B, p: Params) => C): Get<A, C, Params> =>
       Get.create((a, p) => f(clone(a, p), p), ext)
+
+    clone.choose = Choose.implementation(clone.compose)
 
     clone.combine = (...others: Get<A, any, any>[]) =>
       Get.create((a: A, p) => [clone(a, p), ...others.map(x => x._underlying(a, p))])
