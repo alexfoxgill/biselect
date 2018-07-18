@@ -1,7 +1,9 @@
-import { Combine, CombinedSelectorRoot } from './Combine';
+import { Combine } from './Combine';
 import { Root } from './Root';
+import { Get } from './Get'
 
 export namespace Biselect {
+  export const get = Get.create
   export const from = <A>(): Root<A> => Root.create<A>()
   export const combine = <A>() => Combine.create<A>()
 }
