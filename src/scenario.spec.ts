@@ -161,7 +161,8 @@ describe("Users/Documents scenario", () => {
       .andThen(changeEmail)
       .andThen(setDocName)
       .andThen(modifyPermission)
-      (root, { userId, docId })
+      .withParams({ docId })
+      .applyTo(root, { userId })
 
     const table = updated.documents[docId] as TableDocument
     expect(table.table.columns[1]).to.equal("is it done yet")
