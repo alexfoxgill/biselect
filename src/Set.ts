@@ -3,11 +3,14 @@ import { Extension } from './Extension';
 import { Debug } from './Debug';
 import * as DeepEqual from 'fast-deep-equal'
 import { Subtract, combine } from './util';
+import { UpdateChain } from './UpdateChain';
 
 export type SetSignature<A, B, Params extends {}> =
-  {} extends Params
-  ? (a: A, b: B) => A
-  : (a: A, p: Params, b: B) => A
+  ((b: B) => UpdateChain<A, Params>)
+  &
+  ({} extends Params
+    ? (a: A, b: B) => A
+    : (a: A, p: Params, b: B) => A)
 
 export type Set<A, B, Params extends {}> = SetSignature<A, B, Params> & {
   type: "set"
@@ -24,9 +27,14 @@ export namespace Set {
 
   const normaliseArgs = <A, P, B>(set: (a: A, p: P, b: B) => A) =>
     function(a: A, p: P, b: B) {
-      return arguments.length === 2
-        ? set(a, undefined as any, p as any)
-        : set(a, p, b)
+      switch (arguments.length) {
+        case 1: {
+          const b = a as any as B
+          return UpdateChain.create<A, P>((aa, pp) => set(aa, pp, b))
+        }
+        case 2: return set(a, undefined as any, p as any)
+        default: return set(a, p, b)
+      }
     }
 
   export const create = <A, B, Params extends {} = {}>(set: (a: A, p: Params, b: B) => A, ext: Extension = Extension.none): Set<A, B, Params> => {

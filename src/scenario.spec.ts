@@ -147,4 +147,26 @@ describe("Users/Documents scenario", () => {
     expect(updatedDocName).to.equal("edited-" + todoTextDoc.name)
     expect(updatedPermissions).to.deep.equal([permission])
   })
+
+  it("uses update chaining to update several parts of the store at once", () => {
+    const docId = todoTableDoc.id
+    const userId = beatrice.id
+
+    const renameColumn = docSelector.choose(Doc.isTable).deepMerge({ table: { columns: [ "task", "is it done yet" ] } })
+    const changeEmail = userSelector.merge({ email: '<redacted>@<redacted>.com' })
+    const setDocName = docSelector.prop('name').set("updated.doc")
+    const modifyPermission = permissionSelector.modify(permissions => [...permissions, Permission.Read])
+
+    const updated = renameColumn
+      .andThen(changeEmail)
+      .andThen(setDocName)
+      .andThen(modifyPermission)
+      (root, { userId, docId })
+
+    const table = updated.documents[docId] as TableDocument
+    expect(table.table.columns[1]).to.equal("is it done yet")
+    expect(updated.users[userId].email).to.equal("<redacted>@<redacted>.com")
+    expect(updated.documents[docId].name).to.equal("updated.doc")
+    expect(updated.permissions[userId][docId]).to.deep.equal([Permission.Owner, Permission.Read])
+  })
 })

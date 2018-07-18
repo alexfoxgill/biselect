@@ -4,30 +4,46 @@ import { DeepPartial } from './DeepPartial';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
+import { UpdateChain } from './UpdateChain'
+
+
+export interface NoParamsModify<A, B> {
+  (f: (b: B) => B): UpdateChain<A>
+  (a: A, f: (b: B) => B): A
+}
+
+export interface ParamsModify<A, B, Params> {
+  (f: (b: B, params: Params) => B): UpdateChain<A, Params>
+  (a: A, p: Params, f: (b: B) => B): A
+}
 
 export type ModifySignature<A, B, Params extends {}> =
   {} extends Params
-    ? (a: A, f: (b: B) => B) => A
-    : (a: A, p: Params, f: (b: B) => B) => A
+    ? NoParamsModify<A, B>
+    : ParamsModify<A, B, Params>
 
 export interface ModifyCompose<A, B, Params> {
   <C, BCParams>(other: Modify<B, C, BCParams>): Modify<A, C, Params & BCParams>
   <C, BCParams>(other: Set<B, C, BCParams>): Set<A, C, Params & BCParams>
 }
 
-export type Merge<A, B, Params extends {}> =
-  B extends object
-  ? {} extends Params
-    ? (a: A, someB: Partial<B>) => A
-    : (a: A, params: Params, someB: Partial<B>) => A
-  : never
+export type IfObject<A, B> = A extends object ? B : never
 
-export type DeepMerge<A, B, Params extends {}> =
-  B extends object
-  ? {} extends Params
-    ? (a: A, b: DeepPartial<B>) => A
-    : (a: A, params: Params, b: DeepPartial<B>) => A
-  : never
+export type Merge<A, B, Params extends {}> = IfObject<B,
+    ((b: Partial<B>) => UpdateChain<A, Params>)
+    &
+    ({} extends Params
+      ? (a: A, someB: Partial<B>) => A
+      : (a: A, params: Params, someB: Partial<B>) => A)
+  >
+
+export type DeepMerge<A, B, Params extends {}> = IfObject<B,
+    ((b: DeepPartial<B>) => UpdateChain<A, Params>)
+    &
+    ({} extends Params
+      ? (a: A, b: DeepPartial<B>) => A
+      : (a: A, params: Params, b: DeepPartial<B>) => A)
+  >
 
 export type Modify<A, B, Params extends {} = {}> = ModifySignature<A, B, Params> & {
   type: "modify"
@@ -43,11 +59,15 @@ export type Modify<A, B, Params extends {} = {}> = ModifySignature<A, B, Params>
 }
 
 export namespace Modify {
-  const normaliseArgs = <A, P, F>(modify: (a: A, p: P, f: F) => A) =>
-    function(a: A, p: P, f: F) {
-      return arguments.length === 2
-        ? modify(a, undefined as any, p as any)
-        : modify(a, p, f)
+  const normaliseArgs = <A, P, B>(modify: (a: A, p: P, f: (b: B) => B) => A) =>
+    function (a: A, p: P, f: (b: B) => B) {
+      switch (arguments.length) {
+        case 1:
+          const update: (b: B, p: P) => B = a as any
+          return UpdateChain.create<A, P>((aa, pp) => modify(aa, pp, b => update(b, pp)))
+        case 2: return modify(a, undefined as any, p as any)
+        default: return modify(a, p, f)
+      }
     }
 
   export const create = <A, B, Params extends {} = {}>(modify: (a: A, p: Params, f: (b: B) => B) => A, ext: Extension = Extension.none) => {
@@ -67,11 +87,35 @@ export namespace Modify {
     clone.extend = (newExtension: Extension) => 
       create(modify, Extension.combine(ext, newExtension))
 
-    clone.merge = normaliseArgs((a: A, params: Params, someB: Partial<B>): A =>
-      clone(a, params, (b: B) => ({ ...b as any, ...someB as any })))
+    clone.merge = function(a: A, p: Params, someB: Partial<B>) {
+      switch (arguments.length) {
+        case 1: {
+          const someB = a as any as Partial<B>
+          return UpdateChain.create<A, Params>((aa, pp) => clone(aa, pp, (b: B) => ({ ...b as any, ...someB as any })))
+        }
+        case 2: {
+          const someB = p as any as Partial<B>
+          return clone(a, (b: B) => ({ ...b as any, ...someB as any }))
+        }
+        default:
+          return clone(a, p, (b: B) => ({ ...b as any, ...someB as any }))
+      }
+    }
   
-    clone.deepMerge = normaliseArgs((a: A, params: Params, someB: DeepPartial<B>): A =>
-      clone(a, params, (b: B) => DeepPartial.merge(b, someB)))
+    clone.deepMerge = function (a: A, p: Params, someB: DeepPartial<B>) {
+      switch (arguments.length) {
+        case 1: {
+          const someB = a as any as DeepPartial<B>
+          return UpdateChain.create<A, Params>((aa, pp) => clone(aa, pp, (b: B) => DeepPartial.merge(b, someB)))
+        }
+        case 2: {
+          const someB = p as any as DeepPartial<B>
+          return clone(a, p, (b: B) => DeepPartial.merge(b, someB))
+        }
+        default:
+          return clone(a, p, (b: B) => DeepPartial.merge(b, someB))
+      }
+    }
 
     clone.mapParams = <P2>(map: (p2: P2) => Params) =>
       create<A, B, P2>((a, p, f) => clone(a, map(p), f), ext)
