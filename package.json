@@ -1,6 +1,6 @@
 {
   "name": "biselect",
-  "version": "2.8.1",
+  "version": "2.8.4",
   "description": "Two-way selectors for Redux-like applications, TypeScript-first.",
   "main": "dist/index",
   "typings": "dist/index",

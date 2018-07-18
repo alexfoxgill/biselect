@@ -72,7 +72,7 @@ export namespace Get {
     clone.choose = Choose.implementation(clone.compose)
 
     clone.combine = (...others: Get<A, any, any>[]) =>
-      Get.create((a: A, p) => [clone(a, p), ...others.map(x => x._underlying(a, p))])
+      Get.create((a: A, p) => [clone(a, p), ...others.map(x => x._underlying(a, p))], ext)
 
     clone.prop = Prop.implementation(clone.compose)
 
