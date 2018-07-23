@@ -2,7 +2,7 @@ import { Combine } from './Combine';
 import { Root } from './Root';
 import { Get } from './Get'
 import { Extension } from './Extension'
-export { Extension } from './Extension'
+export { Extension, Combine }
 export { Selector } from './Selector'
 export { MaybeSelector } from './MaybeSelector'
 export { Converter } from './Converter'
