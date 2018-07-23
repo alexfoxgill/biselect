@@ -47,7 +47,7 @@ const userSelector = Biselect.from<Users>().index('userId')
 
 userSelector.get(users, { userId: "007" }) // { name: "James Bond" }
 userSelector.get(users, { userId: "006" }) // null
-userSelector.set(users, { name: "Alec Trevelyan" }, { userId: "006" })
+userSelector.set(users, { userId: "006" }, { name: "Alec Trevelyan" })
 // { "007": { name: "James Bond" }, "006": { name: "Alec Trevelyan" } }
 ```
 
@@ -61,7 +61,7 @@ const users: Users = {
 const userNameSelector = userSelector.compose(nameSelector)
 
 userNameSelector.get(users, { userId: "007" }) // "James Bond"
-userNameSelector.modify(users, name => name.split('').reverse().join(''), { userId: "007" })
+userNameSelector.modify(users, { userId: "007" }, name => name.split('').reverse().join(''))
 // { "006": { name: { "Alec Trevelyan" }, "007": { name: "dnoB semaJ" }}
 ```
 
