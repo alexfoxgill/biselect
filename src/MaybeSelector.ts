@@ -11,7 +11,7 @@ import { Choose } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
-import { Subtract } from './util';
+import { Subtract, StringProperty } from './util';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
@@ -35,6 +35,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeSelector<A, B, P2>
+  addParam: <P extends string>(p: P) => MaybeSelector<A, B, Params & StringProperty<P>>
   withParams: <P2 extends Partial<Params>>(params: P2) => MaybeSelector<A, B, Subtract<Params, P2>>
   withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Selector<A, B, Params>
   withDefaultValue: (ifNull: B) => Selector<A, B, Params>
@@ -108,6 +109,7 @@ export namespace MaybeSelector {
       merge,
       deepMerge,
       mapParams,
+      addParam: () => maybeSelector as any,
       withParams,
       withDefault,
       withDefaultValue,

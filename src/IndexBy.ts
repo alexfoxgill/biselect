@@ -1,8 +1,7 @@
 import { MaybeSelector } from "./MaybeSelector";
 import { Selector } from "./Selector";
 import { GetSignature } from "./Get";
-
-export type StringProperty<K extends string> = { [Key in K]: string }
+import { StringProperty } from "./util";
 
 export type IndexBy<A, B, Params extends {} = {}> =
   B extends { [key: string]: infer C }
