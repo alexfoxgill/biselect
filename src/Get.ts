@@ -7,7 +7,7 @@ import { GetPropOverloads, Prop } from './Prop'
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
-import { Subtract, combine, StringProperty } from './util';
+import { Subtract, combine, Property } from './util';
 import { Choose } from './Choose'
 
 export type GetSignature<A, B, Params extends {}> =
@@ -40,7 +40,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
   combine: GetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
-  addParam: <P extends string>(p: P) => Get<A, B, Params & StringProperty<P>>
+  addParam: <P extends string, V = string>(p: P) => Get<A, B, Params & Property<P, V>>
   withParams: <P2 extends Partial<Params>>(params: P2) => Get<A, B, Subtract<Params, P2>>
   memoize: () => Get<A, B, Params>
   debug: () => Get<A, B, Params>

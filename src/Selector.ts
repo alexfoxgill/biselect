@@ -11,7 +11,7 @@ import { Choose } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
-import { Subtract, StringProperty } from './util'
+import { Subtract, Property } from './util'
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -34,7 +34,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Selector<A, B, P2>
-  addParam: <P extends string>(p: P) => Selector<A, B, Params & StringProperty<P>>
+  addParam: <P extends string, V = string>(p: P) => Selector<A, B, Params & Property<P, V>>
   withParams: <P2 extends Partial<Params>>(params: P2) => Selector<A, B, Subtract<Params, P2>>
   memoize: () => Selector<A, B, Params>
   debug: () => Selector<A, B, Params>

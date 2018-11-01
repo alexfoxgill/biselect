@@ -62,6 +62,19 @@ describe("Selector", () => {
     })
   })
 
+  describe(".addParam()", () => {
+    it("adds a required parameter", () => {
+      interface Foo { bar: number }
+      const selector = Selector.fromGetSet<Foo, number>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+        .addParam<'num', number>('num')
+        .get
+        .map((bar, { num }) => bar + num)
+
+      const result = selector({ bar: 1 }, { num: 2 })
+      expect(result).to.equal(2)
+    })
+  })
+
   describe(".indexBy()", () => {
     it("returns a Selector if a default value is provided", () => {
       interface Foo {
