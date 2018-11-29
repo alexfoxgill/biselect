@@ -5,6 +5,7 @@ import { Get } from './Get';
 import { MaybeSelector } from './MaybeSelector';
 import { Converter } from './Converter';
 import { MaybeConverter } from './MaybeConverter';
+import { MaybeGet } from './MaybeGet';
 
 describe("Converter", () => {
 
@@ -21,7 +22,6 @@ describe("Converter", () => {
     const result = converter.reverseGet(["f", "o", "o"])
     expect(result).to.deep.equal("foo")
   })
-  
 
   it("composes with Get", () => {
     const get = Converter.fromGets<string, string[]>(str => str.split(''), list => list.join(''))
@@ -31,10 +31,18 @@ describe("Converter", () => {
     expect(result).to.deep.equal(["o", "o", "f"])
   })
 
+  it("composes with MaybeGet", () => {
+    const maybeGet = MaybeGet.create((list: string[]) => list[0])
+    const get = Converter.fromGets<string, string[]>(str => str.split(''), list => list.join(''))
+      .compose(maybeGet)
+
+    const result = get("foo")
+    expect(result).to.equal("f")
+  })
+
   it("composes with Selector", () => {
     interface Foo { bar: string }
     interface Sha { pow: string }
-    interface Bar { qux: string }
 
     const selector = Converter.fromGets<Foo, Sha>(foo => ({ pow: foo.bar }), sha => ({ bar: sha.pow }))
       .compose(Selector.fromGetSet<Sha, string>(sha => sha.pow, (sha, _, pow) => ({ pow })))

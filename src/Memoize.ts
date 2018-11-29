@@ -24,7 +24,7 @@ export namespace Memoize {
 
   export const create = (): Extension =>
     Extension.create(optic => {
-      if (optic.type === "get") {
+      if (optic.type === "get" || optic.type === "maybeGet") {
         optic._underlying = memoizeGet(optic._underlying)
       }
     })

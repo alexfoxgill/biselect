@@ -5,6 +5,7 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Update } from './Update'
+import { MaybeGet } from './MaybeGet';
 
 
 export interface NoParamsModify<A, B> {
@@ -131,7 +132,7 @@ export namespace Modify {
   export const fromGetSet = <A, B, Params extends {}>(get: Get<A, B, Params>, set: Set<A, B, Params>): Modify<A, B, Params> =>
     create((a, p, f) => set._underlying(a, p, f(get._underlying(a, p))))
 
-  export const fromMaybeGetSet = <A, B, Params extends {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>): Modify<A, B, Params> =>
+  export const fromMaybeGetSet = <A, B, Params extends {}>(get: MaybeGet<A, B, Params>, set: Set<A, B, Params>): Modify<A, B, Params> =>
     create((a, p, f) => {
       const b = get._underlying(a, p)
       return b === null || b === undefined ? a : set._underlying(a, p, f(b))

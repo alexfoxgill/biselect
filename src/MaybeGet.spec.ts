@@ -1,23 +1,23 @@
 import { expect } from 'chai'
 import 'mocha'
-import { Get } from './Get'
 import { Selector } from './Selector';
 import { MaybeSelector } from './MaybeSelector';
 import { Converter } from './Converter';
 import { MaybeConverter } from './MaybeConverter';
 import { MaybeGet } from './MaybeGet';
+import { Get } from './Get';
 
-describe("Get", () => {
+describe("MaybeGet", () => {
 
   it("doesn't permit a param argument when Params is empty", () => {
-    const get = Get.create((num: number) => num.toString())
+    const get = MaybeGet.create((num: number) => num.toString())
     const result = get(1)
     
     expect(result).to.equal("1")
   })
 
   it("requires and uses a param argument when Params is not empty", () => {
-    const get = Get.create<number, string, { append: string }>((num, param) => num.toString() + param.append)
+    const get = MaybeGet.create<number, string, { append: string }>((num, param) => num.toString() + param.append)
     const result = get(1, { append: "0" })
 
     expect(result).to.equal("10")
@@ -25,7 +25,7 @@ describe("Get", () => {
 
   describe(".map()", () => {
     it("can map the result", () => {
-      const get = Get.create((num: number) => num.toString())
+      const get = MaybeGet.create((num: number) => num.toString())
         .map(str => str[0])
 
       const result = get(12)
@@ -34,12 +34,21 @@ describe("Get", () => {
     })
 
     it("passes params", () => {
-      const get = Get.create((num: number, params: string) => num.toString())
+      const get = MaybeGet.create((num: number, params: string) => num.toString())
         .map((str, params) => str + params)
 
       const result = get(12, "3")
 
       expect(result).to.equal("123")
+    })
+
+    it("ignores null values", () => {
+      const get = MaybeGet.create((num: number) => num === 0 ? null : num.toString())
+        .map(str => str[0])
+
+      const result = get(0)
+
+      expect(result).to.be.null
     })
   })
 
@@ -51,7 +60,7 @@ describe("Get", () => {
       interface Params2 {
         y: number
       }
-      const get = Get.create<number, number, Params1>((num, p) => num + p.x)
+      const get = MaybeGet.create<number, number, Params1>((num, p) => num + p.x)
         .mapParams<Params2>(p2 => ({ x: p2.y }))
   
       const result = get(1, { y: 2 })
@@ -60,14 +69,14 @@ describe("Get", () => {
   })
 
   describe(".combine()", () => {
-    it("combines with another Get", () => {
+    it("combines with another MaybeGet", () => {
       interface Foo {
         bar: number
         sha: string
       }
 
-      const getBar = Get.create((foo: Foo) => foo.bar)
-      const getSha = Get.create((foo: Foo) => foo.sha)
+      const getBar = MaybeGet.create((foo: Foo) => foo.bar)
+      const getSha = MaybeGet.create((foo: Foo) => foo.sha)
       const combined = getBar.combine(getSha)
 
       const result = combined({ bar: 1, sha: "a" })
@@ -75,7 +84,7 @@ describe("Get", () => {
       expect(result).to.deep.equal([1, "a"])
     })
 
-    it("combines with several other Gets", () => {
+    it("combines with several other MaybeGets", () => {
       interface Foo {
         bar: number
         sha: string
@@ -83,10 +92,10 @@ describe("Get", () => {
         date: Date
       }
 
-      const getBar = Get.create((foo: Foo) => foo.bar)
-      const getSha = Get.create((foo: Foo) => foo.sha)
-      const getQux = Get.create((foo: Foo) => foo.qux)
-      const getDate = Get.create((foo: Foo) => foo.date)
+      const getBar = MaybeGet.create((foo: Foo) => foo.bar)
+      const getSha = MaybeGet.create((foo: Foo) => foo.sha)
+      const getQux = MaybeGet.create((foo: Foo) => foo.qux)
+      const getDate = MaybeGet.create((foo: Foo) => foo.date)
       const combined = getBar.combine(getSha, getQux, getDate)
 
       const date = new Date()
@@ -97,13 +106,13 @@ describe("Get", () => {
   })
 
   describe(".choose()", () => {
-    it("creates a new Get", () => {
+    it("creates a new MaybeGet", () => {
       interface Foo {
         bar: string | number
       }
 
       const isString = (x: any): x is string => typeof x === "string"
-      const getBar = Get.create((foo: Foo) => foo.bar)
+      const getBar = MaybeGet.create((foo: Foo) => foo.bar)
       const chosen = getBar.choose(isString)
 
       const stringResult = chosen({ bar: "hello" })
@@ -118,8 +127,9 @@ describe("Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
 
-    const get = Get.create((foo: Foo) => foo.bar)
-      .compose(Get.create((bar: Bar) => bar.qux))
+    const getBar = MaybeGet.create((foo: Foo) => foo.bar)
+    const getQux = Get.create((bar: Bar) => bar.qux)
+    const get = getBar.compose(getQux)
 
     const result = get({ bar: { qux: 1 } })
     
@@ -130,9 +140,9 @@ describe("Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
 
-    const maybeGet = MaybeGet.create((bar: Bar) => bar.qux)
-    const get = Get.create((foo: Foo) => foo.bar)
-      .compose(maybeGet)
+    const getBar = MaybeGet.create((foo: Foo) => foo.bar)
+    const getQux = MaybeGet.create((bar: Bar) => bar.qux)
+    const get = getBar.compose(getQux)
 
     const result = get({ bar: { qux: 1 } })
     
@@ -143,7 +153,7 @@ describe("Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
 
-    const get = Get.create((foo: Foo) => foo.bar)
+    const get = MaybeGet.create((foo: Foo) => foo.bar)
       .compose(Selector.fromGetSet<Bar, number>(b => b.qux, (b, _, qux) => ({ qux })))
 
     const result = get({ bar: { qux: 1 } })
@@ -155,7 +165,7 @@ describe("Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number | null }
 
-    const get = Get.create((foo: Foo) => foo.bar)
+    const get = MaybeGet.create((foo: Foo) => foo.bar)
     .compose(MaybeSelector.fromGetSet<Bar, number>(b => b.qux, (b, _, qux) => ({ qux })))
 
     const result = get({ bar: { qux: 1 } })
@@ -170,7 +180,7 @@ describe("Get", () => {
     interface Bar { qux: number }
     interface Sha { pow: number }
 
-    const get = Get.create((foo: Foo) => foo.bar)
+    const get = MaybeGet.create((foo: Foo) => foo.bar)
       .compose(Converter.fromGets<Bar, Sha>(bar => ({ pow: bar.qux }), sha => ({ qux: sha.pow })))
 
     const result = get({ bar: { qux: 1 } })
@@ -186,7 +196,7 @@ describe("Get", () => {
       return isNaN(num) ? null : num
     }
 
-    const get = Get.create((foo: Foo) => foo.bar)
+    const get = MaybeGet.create((foo: Foo) => foo.bar)
       .compose(MaybeConverter.fromGets(parseNum, num => num.toString()))
 
     const result = get({ bar: "1" })

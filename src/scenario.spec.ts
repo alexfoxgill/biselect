@@ -103,7 +103,7 @@ describe("Users/Documents scenario", () => {
   const fromRoot = Biselect.from<Domain>().extend(Memoize())
   const userSelector = fromRoot.prop('users').indexBy('userId')
   const docSelector = fromRoot.prop('documents').indexBy('docId')
-  const permissionSelector = fromRoot.prop('permissions').indexBy('userId').withDefaultValue({}).indexBy('docId').withDefaultValue([])
+  const permissionSelector = fromRoot.prop('permissions').indexBy('userId', {}).indexBy('docId', [])
   const docNameSelector = docSelector.prop('name')
 
   it("adds a permission", () => {

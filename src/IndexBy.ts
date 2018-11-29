@@ -33,7 +33,7 @@ export namespace IndexBy {
   export function create<A extends { [key: string]: B }, B, Params extends {}, K extends string>(key: K, getDefault: GetSignature<A, B, Params & StringProperty<K>>): Selector<A, B, Params & StringProperty<K>>
   export function create<A extends { [key: string]: B }, B, Params extends {}, K extends string>(key: K, defaultValue?: B | GetSignature<A, B, Params>) {
     const selector = MaybeSelector.fromGetSet<A, B, StringProperty<K>>(
-      (a, params) => nullIfUndefined(a[params[key]]),
+      (a, params) => nullIfUndefined(a[params[key]] as any as B),
       (a, params, b) => ({ ...a as any, [params[key]]: b }))
 
     if (defaultValue === undefined) {

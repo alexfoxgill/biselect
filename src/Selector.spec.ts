@@ -71,7 +71,7 @@ describe("Selector", () => {
         .map((bar, { num }) => bar + num)
 
       const result = selector({ bar: 1 }, { num: 2 })
-      expect(result).to.equal(2)
+      expect(result).to.equal(3)
     })
   })
 
@@ -120,6 +120,19 @@ describe("Selector", () => {
 
     const get = Selector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
       .compose(Get.create((bar: Bar) => bar.qux))
+
+    const result = get({ bar: { qux: 1 } })
+    
+    expect(result).to.equal(1)
+  })
+
+  it("composes with MaybeGet", () => {
+    interface Foo { bar: Bar }
+    interface Bar { qux: number }
+
+    const maybeGet = Get.create((bar: Bar) => bar.qux)
+    const get = Selector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(maybeGet)
 
     const result = get({ bar: { qux: 1 } })
     

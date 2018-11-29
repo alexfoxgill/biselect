@@ -1,7 +1,8 @@
-import { Combine } from './Combine';
+import { Combine, CombinedSelectorRoot } from './Combine';
 import { Root } from './Root';
 import { Get } from './Get'
 import { Extension } from './Extension'
+
 export { Extension, Combine }
 export { Selector } from './Selector'
 export { MaybeSelector } from './MaybeSelector'

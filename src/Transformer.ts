@@ -1,5 +1,6 @@
 import { Get } from './Get'
 import { Set } from './Set'
+import { MaybeGet } from './MaybeGet'
 import { Modify } from './Modify'
 import { MaybeSelector } from './MaybeSelector'
 import { Selector } from './Selector'
@@ -8,13 +9,15 @@ import { Converter } from './Converter'
 
 export type Composable<A, B, Params extends {}> =
   Get<A, B, Params>
-  | MaybeSelector<A, B, Params>
+  | MaybeGet<A, B, Params>
   | Selector<A, B, Params>
-  | MaybeConverter<A, B, Params>
+  | MaybeSelector<A, B, Params>
   | Converter<A, B, Params>
+  | MaybeConverter<A, B, Params>
 
 export type All<A, B, Params extends {}> =
   Get<A, B, Params>
+  | MaybeGet<A, B, Params>
   | Set<A, B, Params>
   | Modify<A, B, Params>
   | MaybeSelector<A, B, Params>

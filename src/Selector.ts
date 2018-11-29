@@ -12,9 +12,11 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, Property } from './util'
+import { MaybeGet } from './MaybeGet';
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
+  <C, BCParams>(other: MaybeGet<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
   <C, BCParams>(other: MaybeSelector<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
   <C, BCParams>(other: Selector<B, C, BCParams>): Selector<A, C, Params & BCParams>
   <C, BCParams>(other: MaybeConverter<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
@@ -57,14 +59,16 @@ export namespace Selector {
       switch (other.type) {
         case "get":
           return get.compose(other)
+        case "maybeGet":
+          return get.compose(other)
         case "maybeSelector":
-          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set), ext)
+          return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
         case "selector":
           return Selector.create(get.compose(other), modify.compose(other.set), ext)
         case "maybeConverter":
-          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
+          return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
         case "converter":
-          return Selector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
+          return Selector.create(get.compose(other), set.compose(other.reverseGet), ext)
       }
     }
 

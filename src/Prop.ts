@@ -2,6 +2,14 @@ import { Selector } from './Selector'
 import { MaybeSelector } from './MaybeSelector'
 import { Get } from './Get'
 import { Set } from './Set'
+import { MaybeGet } from './MaybeGet'
+
+export interface MaybeGetPropOverloads<A, B, Params extends {} = {}> {
+  <K1 extends keyof B>(key: K1): MaybeGet<A, B[K1], Params>
+  <K1 extends keyof B, K2 extends keyof B[K1]>(k1: K1, k2: K2): MaybeGet<A, B[K1][K2], Params>
+  <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2]>(k1: K1, k2: K2, k3: K3): MaybeGet<B, B[K1][K2][K3], Params>
+  <K1 extends keyof B, K2 extends keyof B[K1], K3 extends keyof B[K1][K2], K4 extends keyof B[K1][K2][K3]>(k1: K1, k2: K2, k3: K3): MaybeGet<B, B[K1][K2][K3][K4], Params>
+}
 
 export interface GetPropOverloads<A, B, Params extends {} = {}> {
   <K1 extends keyof B>(key: K1): Get<A, B[K1], Params>

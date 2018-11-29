@@ -7,9 +7,11 @@ import { Set } from './Set'
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
+import { MaybeGet } from './MaybeGet';
 
 export interface ConverterCompose<A, B, Params> {
-  <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
+  <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
+  <C, BCParams>(other: MaybeGet<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
   <C, BCParams>(other: MaybeSelector<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
   <C, BCParams>(other: Selector<B, C, BCParams>): Selector<A, C, Params & BCParams>
   <C, BCParams>(other: MaybeConverter<B, C, BCParams>): MaybeConverter<A, C, Params & BCParams>
@@ -46,15 +48,17 @@ export namespace Converter {
     const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
       switch (other.type) {
         case "get":
-          return Get.composeMaybe(get, other).extend(ext)
+          return get.compose(other)
+        case "maybeGet":
+          return get.compose(other)
         case "maybeSelector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), wrapSet(get, reverseGet, other.set), ext)
+          return MaybeSelector.create(get.compose(other), wrapSet(get, reverseGet, other.set), ext)
         case "selector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), wrapSet(get, reverseGet, other.set), ext)
+          return Selector.create(get.compose(other), wrapSet(get, reverseGet, other.set), ext)
         case "maybeConverter":
-          return MaybeConverter.create(get.compose(other.get), other.reverseGet.compose(reverseGet), ext)
+          return MaybeConverter.create(get.compose(other), other.reverseGet.compose(reverseGet), ext)
         case "converter":
-          return create(get.compose(other.get), other.reverseGet.compose(reverseGet), ext)
+          return create(get.compose(other), other.reverseGet.compose(reverseGet), ext)
       }
     }
 

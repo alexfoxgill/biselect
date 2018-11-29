@@ -7,6 +7,7 @@ import { Converter } from './Converter';
 import { MaybeConverter } from './MaybeConverter';
 import { IndexBy } from './IndexBy';
 import { Biselect } from '.';
+import { MaybeGet } from './MaybeGet';
 
 describe("MaybeSelector", () => {
 
@@ -175,6 +176,21 @@ describe("MaybeSelector", () => {
 
     const get = MaybeSelector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
       .compose(Get.create((bar: Bar) => bar.qux))
+
+    const result = get({ bar: { qux: 1 } })
+    expect(result).to.equal(1)
+
+    const nullResult = get({ bar: null })
+    expect(nullResult).to.be.null
+  })
+
+  it("composes with MaybeGet", () => {
+    interface Foo { bar: Bar | null }
+    interface Bar { qux: number }
+
+    const maybeGet = MaybeGet.create((bar: Bar) => bar.qux)
+    const get = MaybeSelector.fromGetSet<Foo, Bar>(foo => foo.bar, (foo, _, bar) => ({ bar }))
+      .compose(maybeGet)
 
     const result = get({ bar: { qux: 1 } })
     expect(result).to.equal(1)

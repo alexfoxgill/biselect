@@ -1,5 +1,6 @@
 import { Get, GetSignature } from './Get'
 import { Set } from './Set'
+import { MaybeGet } from './MaybeGet'
 import { Modify, Merge, DeepMerge } from './Modify'
 import { Composable } from './Transformer'
 import { Selector } from './Selector'
@@ -14,7 +15,8 @@ import { Debug } from './Debug';
 import { Subtract, Property } from './util';
 
 export interface MaybeSelectorCompose<A, B, Params> {
-  <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C | null, Params & BCParams>
+  <C, BCParams>(other: Get<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
+  <C, BCParams>(other: MaybeGet<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
   <C, BCParams>(other: MaybeSelector<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
   <C, BCParams>(other: Selector<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
   <C, BCParams>(other: MaybeConverter<B, C, BCParams>): MaybeSelector<A, C, Params & BCParams>
@@ -25,7 +27,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   type: "maybeSelector"
   extend: (ext: Extension) => MaybeSelector<A, B, Params>
 
-  get: Get<A, B | null, Params>
+  get: MaybeGet<A, B, Params>
   set: Set<A, B, Params>
   modify: Modify<A, B, Params>
   compose: MaybeSelectorCompose<A, B, Params>
@@ -44,16 +46,16 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
 }
 
 export namespace MaybeSelector {
-  export const fromGetSet = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B | null, set: (a: A, p: Params, b: B) => A) =>
-    create(Get.create(convertUndefinedToNull(get)), Set.create(set))
+  export const fromGetSet = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B | null | undefined, set: (a: A, p: Params, b: B) => A) =>
+    create(MaybeGet.create(convertUndefinedToNull(get)), Set.create(set))
 
-  const convertUndefinedToNull = <A, B, Params>(get: (a: A, p: Params) => B) =>
-    (a: A, p: Params) => {
+  const convertUndefinedToNull = <A, B, Params>(get: (a: A, p: Params) =>  B | null | undefined) =>
+    (a: A, p: Params): B | null => {
       const result = get(a, p)
       return result === undefined ? null : result
     }
 
-  export const create = <A, B, Params extends {} = {}>(get: Get<A, B | null, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): MaybeSelector<A, B, Params> => {
+  export const create = <A, B, Params extends {} = {}>(get: MaybeGet<A, B, Params>, set: Set<A, B, Params>, ext: Extension = Extension.none): MaybeSelector<A, B, Params> => {
     get = get.extend(ext)
     set = set.extend(ext)
 
@@ -65,15 +67,17 @@ export namespace MaybeSelector {
     const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
       switch (other.type) {
         case "get":
-          return Get.composeMaybe(get, other).extend(ext)
+          return get.compose(other)
+        case "maybeGet":
+          return get.compose(other)
         case "maybeSelector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), modify.compose(other.set), ext)
+          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set), ext)
         case "selector":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), modify.compose(other.set), ext)
+          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set), ext)
         case "maybeConverter":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet), ext)
+          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
         case "converter":
-          return MaybeSelector.create(Get.composeMaybe(get, other.get), set.compose(other.reverseGet), ext)
+          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
       }
     }
     

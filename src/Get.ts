@@ -9,6 +9,7 @@ import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
 import { Choose } from './Choose'
+import { MaybeGet } from './MaybeGet';
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -17,9 +18,10 @@ export type GetSignature<A, B, Params extends {}> =
 
 export interface GetCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
-  <C, BCParams>(other: MaybeSelector<B, C, BCParams>): Get<A, C | null, Params & BCParams>
+  <C, BCParams>(other: MaybeGet<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
+  <C, BCParams>(other: MaybeSelector<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
   <C, BCParams>(other: Selector<B, C, BCParams>): Get<A, C, Params & BCParams>
-  <C, BCParams>(other: MaybeConverter<B, C, BCParams>): Get<A, C | null, Params & BCParams>
+  <C, BCParams>(other: MaybeConverter<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
   <C, BCParams>(other: Converter<B, C, BCParams>): Get<A, C, Params & BCParams>
 }
 
@@ -36,7 +38,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
 
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => Get<A, C, Params>
-  choose: <C extends B>(pred: (b: B) => b is C) => Get<A, C | null, Params> 
+  choose: <C extends B>(pred: (b: B) => b is C) => MaybeGet<A, C, Params> 
   combine: GetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
@@ -59,6 +61,8 @@ export namespace Get {
       switch (other.type) {
         case "get":
           return Get.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
+        case "maybeGet":
+          return MaybeGet.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
         case "maybeSelector":
         case "selector":
         case "maybeConverter":
@@ -92,10 +96,4 @@ export namespace Get {
 
     return clone as Get<A, B, Params>
   }
-
-  export const composeMaybe = <A, B, C, ABParams, BCParams>(ab: Get<A, B | null, ABParams>, bc: Get<B, C, BCParams>): Get<A, C | null, ABParams & BCParams> =>
-    Get.create<A, C | null, ABParams & BCParams>((a, p) => {
-      const b = ab._underlying(a, p)
-      return b === null || b === undefined ? null : bc._underlying(b, p)
-    })
 }

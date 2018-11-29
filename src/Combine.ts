@@ -1,5 +1,4 @@
 import { Selector } from "./Selector";
-import { Root } from "./Root";
 
 export interface CombinedSelectorRoot<A> {
   add: <K extends string, B, Params>(name: K, selector: Selector<A, B, Params>) => CombinedSelector<A, { [KK in K]: B }, Params>

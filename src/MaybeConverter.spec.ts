@@ -5,6 +5,7 @@ import { Get } from './Get';
 import { MaybeSelector } from './MaybeSelector';
 import { Converter } from './Converter';
 import { MaybeConverter } from './MaybeConverter';
+import { MaybeGet } from './MaybeGet';
 
 describe("MaybeConverter", () => {
   const parseNum = (str: string) => {
@@ -74,6 +75,18 @@ describe("MaybeConverter", () => {
     expect(nullResult).to.be.null
   })
 
+  it("composes with MaybeGet", () => {
+    const maybeGet = MaybeGet.create((x: number) => x * 2)
+    const get = MaybeConverter.fromGets<string, number>(parseNum, num => num.toString())
+      .compose(maybeGet)
+
+    const result = get("1")
+    expect(result).to.equal(2)
+
+    const nullResult = get("one")
+    expect(nullResult).to.be.null
+  })
+
   it("composes with Selector", () => {
     interface Foo { bar: string }
 
@@ -89,7 +102,9 @@ describe("MaybeConverter", () => {
 
   it("composes with MaybeSelector", () => {
     const maybeSelector = MaybeConverter.fromGets<string | null, string>(x => x, x => x)
-      .compose(MaybeSelector.fromGetSet<string, string>(str => str[0] || null, (str, _, ch) => str.length === 0 ? ch : ch + str.substr(1)))
+      .compose(MaybeSelector.fromGetSet<string, string>(
+        str => str.length > 1 ? str[0]! : null,
+        (str, _, ch) => str.length === 0 ? ch : ch + str.substr(1)))
 
     const result = maybeSelector.modify("foo", x => x.toUpperCase())
     expect(result).to.equal("Foo")
