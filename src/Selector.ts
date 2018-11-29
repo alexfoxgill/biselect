@@ -7,7 +7,7 @@ import { Converter } from './Converter'
 import { Composable } from './Transformer'
 import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
-import { Choose } from './Choose';
+import { Choose, SelectorChooseOverloads } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
@@ -32,7 +32,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   compose: SelectorCompose<A, B, Params>
   prop: SelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
-  choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
+  choose: SelectorChooseOverloads<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Selector<A, B, P2>

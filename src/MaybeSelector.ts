@@ -8,7 +8,7 @@ import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
 import { MaybeSelectorPropOverloads, Prop } from './Prop'
 import { IndexBy, IndexByMaybe } from './IndexBy'
-import { Choose } from './Choose';
+import { Choose, MaybeSelectorChooseOverloads } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
@@ -33,7 +33,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   compose: MaybeSelectorCompose<A, B, Params>
   prop: MaybeSelectorPropOverloads<A, B, Params>
   indexBy: IndexByMaybe<A, B, Params>
-  choose: <C extends B>(pred: (b: B) => b is C) => MaybeSelector<A, C, Params>
+  choose: MaybeSelectorChooseOverloads<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeSelector<A, B, P2>

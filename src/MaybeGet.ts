@@ -8,7 +8,7 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
-import { Choose } from './Choose'
+import { Choose, MaybeGetChooseOverloads } from './Choose'
 import { Get } from './Get'
 
 export type MaybeGetSignature<A, B, Params extends {}> =
@@ -38,7 +38,7 @@ export type MaybeGet<A, B, Params extends {} = {}> = MaybeGetSignature<A, B, Par
 
   compose: MaybeGetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => MaybeGet<A, C, Params>
-  choose: <C extends B>(pred: (b: B) => b is C) => MaybeGet<A, C, Params> 
+  choose: MaybeGetChooseOverloads<A, B, Params>
   combine: MaybeGetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeGet<A, B, P2>

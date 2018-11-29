@@ -112,6 +112,38 @@ describe("Get", () => {
       const numberResult = chosen({ bar: 1 })
       expect(numberResult).to.be.null
     })
+
+    it("provides a default value", () => {
+      interface Foo {
+        bar: string | number
+      }
+
+      const isString = (x: any): x is string => typeof x === "string"
+      const getBar = Get.create((foo: Foo) => foo.bar)
+      const chosen = getBar.choose(isString, "baz")
+
+      const stringResult = chosen({ bar: "hello" })
+      expect(stringResult).to.equal("hello")
+
+      const numberResult = chosen({ bar: 1 })
+      expect(numberResult).to.equal("baz")
+    })
+
+    it("provides a default getter", () => {
+      interface Foo {
+        bar: string | number
+      }
+
+      const isString = (x: any): x is string => typeof x === "string"
+      const getBar = Get.create((foo: Foo) => foo.bar)
+      const chosen = getBar.choose(isString, x => x.toString())
+
+      const stringResult = chosen({ bar: "hello" })
+      expect(stringResult).to.equal("hello")
+
+      const numberResult = chosen({ bar: 1 })
+      expect(numberResult).to.equal("1")
+    })
   })
 
   it("composes with Get", () => {
