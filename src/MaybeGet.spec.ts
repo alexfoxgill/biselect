@@ -123,6 +123,33 @@ describe("MaybeGet", () => {
     })
   })
 
+  describe(".ifDefined()", () => {
+    it("returns a null if no default value provided", () => {
+      interface Foo {
+        bar?: number
+      }
+      const get = MaybeGet.create((x: Foo) => x.bar)
+        .ifDefined()
+
+      const result = get({ bar: undefined })
+
+      expect(result).to.be.null
+    })
+
+    it("returns the default if one is provided", () => {
+      interface Foo {
+        bar?: number
+      }
+
+      const get = MaybeGet.create((x: Foo) => x.bar)
+        .ifDefined(5)
+
+      const result = get({})
+
+      expect(result).to.equal(5)
+    })
+  })
+
   it("composes with Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }

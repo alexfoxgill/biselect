@@ -10,6 +10,7 @@ import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
 import { Choose, GetChooseOverloads } from './Choose'
 import { MaybeGet } from './MaybeGet';
+import { GetIfDefinedOverloads, IfDefined } from './IfDefined';
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -39,6 +40,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => Get<A, C, Params>
   choose: GetChooseOverloads<A, B, Params>
+  ifDefined: GetIfDefinedOverloads<A, B, Params>
   combine: GetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Get<A, B, P2>
@@ -75,6 +77,7 @@ export namespace Get {
       Get.create((a, p) => f(clone(a, p), p), ext)
 
     clone.choose = Choose.implementation(clone.compose)
+    clone.ifDefined = IfDefined.implementation(clone.compose)
 
     clone.combine = (...others: Get<A, any, any>[]) =>
       Get.create((a: A, p) => [clone(a, p), ...others.map(x => x._underlying(a, p))], ext)

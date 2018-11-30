@@ -13,6 +13,7 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, Property } from './util';
+import { MaybeSelectorIfDefinedOverloads, IfDefined } from './IfDefined';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
@@ -34,6 +35,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   prop: MaybeSelectorPropOverloads<A, B, Params>
   indexBy: IndexByMaybe<A, B, Params>
   choose: MaybeSelectorChooseOverloads<A, B, Params>
+  ifDefined: MaybeSelectorIfDefinedOverloads<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeSelector<A, B, P2>
@@ -84,6 +86,7 @@ export namespace MaybeSelector {
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
     const choose = Choose.implementation(compose)
+    const ifDefined = IfDefined.implementation(compose)
     const merge = modify.merge
     const deepMerge = modify.deepMerge
     const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
@@ -110,6 +113,7 @@ export namespace MaybeSelector {
       prop,
       indexBy,
       choose,
+      ifDefined,
       merge,
       deepMerge,
       mapParams,

@@ -10,6 +10,7 @@ import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
 import { Choose, MaybeGetChooseOverloads } from './Choose'
 import { Get } from './Get'
+import { MaybeGetIfDefinedOverloads, IfDefined } from './IfDefined';
 
 export type MaybeGetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -39,6 +40,7 @@ export type MaybeGet<A, B, Params extends {} = {}> = MaybeGetSignature<A, B, Par
   compose: MaybeGetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => MaybeGet<A, C, Params>
   choose: MaybeGetChooseOverloads<A, B, Params>
+  ifDefined: MaybeGetIfDefinedOverloads<A, B, Params>
   combine: MaybeGetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeGet<A, B, P2>
@@ -77,6 +79,7 @@ export namespace MaybeGet {
       clone.compose(Get.create(f))
 
     clone.choose = Choose.implementation(clone.compose)
+    clone.ifDefined = IfDefined.implementation(clone.compose)
 
     clone.combine = (...others: MaybeGet<A, any, any>[]) =>
       create((a: A, p) => [clone(a, p), ...others.map(x => x._underlying(a, p))], ext)

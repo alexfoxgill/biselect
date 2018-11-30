@@ -13,6 +13,7 @@ import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, Property } from './util'
 import { MaybeGet } from './MaybeGet';
+import { SelectorIfDefinedOverloads, IfDefined } from './IfDefined';
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -33,6 +34,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   prop: SelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
   choose: SelectorChooseOverloads<A, B, Params>
+  ifDefined: SelectorIfDefinedOverloads<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Selector<A, B, P2>
@@ -75,6 +77,7 @@ export namespace Selector {
     const prop = Prop.implementation(compose)
     const indexBy = IndexBy.implementation(compose)
     const choose = Choose.implementation(compose)
+    const ifDefined = IfDefined.implementation(compose)
     const merge = modify.merge
     const deepMerge = modify.deepMerge
     const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
@@ -90,6 +93,7 @@ export namespace Selector {
       prop,
       indexBy,
       choose,
+      ifDefined,
       merge,
       deepMerge,
       mapParams,

@@ -15,6 +15,7 @@ interface Domain {
       [docId: string]: Permission[]
     }
   }
+  currentUser?: User
 }
 
 interface User {
@@ -105,6 +106,7 @@ describe("Users/Documents scenario", () => {
   const docSelector = fromRoot.prop('documents').indexBy('docId')
   const permissionSelector = fromRoot.prop('permissions').indexBy('userId', {}).indexBy('docId', [])
   const docNameSelector = docSelector.prop('name')
+  const currentUserSelector = fromRoot.prop('currentUser').ifDefined({ id: 'UNKNOWN', email: 'unknown@foo.com' })
 
   it("adds a permission", () => {
     const result = permissionSelector.modify(root, { userId: aaron.id, docId: todoTableDoc.id }, list => [...list, Permission.Read])
@@ -172,5 +174,11 @@ describe("Users/Documents scenario", () => {
     expect(updated.users[userId].email).to.equal("<redacted>@<redacted>.com")
     expect(updated.documents[docId].name).to.equal("updated.doc")
     expect(updated.permissions[userId][docId]).to.deep.equal([Permission.Owner, Permission.Read])
+  })
+
+  it("gives a default current user", () => {
+    const updated = currentUserSelector.prop('email').set(root, '<redacted>@<redacted>.com')
+    
+    expect(updated.currentUser).to.deep.equal({ id: 'UNKNOWN', email: '<redacted>@<redacted>.com' })
   })
 })

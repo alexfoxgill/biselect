@@ -146,6 +146,32 @@ describe("Get", () => {
     })
   })
 
+  describe(".ifDefined()", () => {
+    it("returns a null if no default value provided", () => {
+      interface Foo {
+        bar?: number
+      }
+      const get = Get.create((x: Foo) => x.bar)
+        .ifDefined()
+
+      const result = get({ bar: undefined })
+
+      expect(result).to.be.null
+    })
+
+    it("returns the default if one is provided", () => {
+      interface Foo {
+        bar: number | null
+      }
+      const get = Get.create((x: Foo) => x.bar)
+        .ifDefined(5)
+
+      const result = get({ bar: null })
+
+      expect(result).to.equal(5)
+    })
+  })
+
   it("composes with Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }
