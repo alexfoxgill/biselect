@@ -92,13 +92,8 @@ export namespace MaybeSelector {
     const mapParams = <P2>(map: (p2: P2) => Params) => create(get.mapParams(map), set.mapParams(map), ext)
     const withParams = <P2 extends Partial<Params>>(params: P2) => create(get.withParams(params), set.withParams(params), ext)
 
-    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> => {
-      const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
-      return Selector.create<A, B, Params>(Get.create((a, p) => {
-        const b = get._underlying(a, p)
-        return b === null ? ifNullGet._underlying(a, p): b
-      }, ext), set, ext)
-    }
+    const withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Selector<A, B, Params> =>
+      Selector.create<A, B, Params>(get.withDefault(ifNull), set, ext)
 
     const withDefaultValue = (ifNull: B): Selector<A, B, Params> =>
       withDefault(Get.create<A, B, Params>(_ => ifNull, ext))

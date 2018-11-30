@@ -150,6 +150,36 @@ describe("MaybeGet", () => {
     })
   })
 
+  describe(".withDefault", () => {
+    it("provides a default if the value is null", () => {
+      interface Foo {
+        bar: number | null
+      }
+
+      const get = MaybeGet.create((x: Foo) => x.bar)
+        .withDefault(() => 5)
+
+        const result = get({ bar: null })
+
+      expect(result).to.equal(5)
+    })
+  })
+
+  describe(".withDefaultValue", () => {
+    it("provides a default if the value is null", () => {
+      interface Foo {
+        bar: number | null
+      }
+
+      const get = MaybeGet.create((x: Foo) => x.bar)
+        .withDefaultValue(5)
+
+      const result = get({ bar: null })
+
+      expect(result).to.equal(5)
+    })
+  })
+
   it("composes with Get", () => {
     interface Foo { bar: Bar }
     interface Bar { qux: number }

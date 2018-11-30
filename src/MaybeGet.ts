@@ -9,7 +9,7 @@ import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
 import { Choose, MaybeGetChooseOverloads } from './Choose'
-import { Get } from './Get'
+import { Get, GetSignature } from './Get'
 import { MaybeGetIfDefinedOverloads, IfDefined } from './IfDefined';
 
 export type MaybeGetSignature<A, B, Params extends {}> =
@@ -46,6 +46,8 @@ export type MaybeGet<A, B, Params extends {} = {}> = MaybeGetSignature<A, B, Par
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeGet<A, B, P2>
   addParam: <P extends string, V = string>(p: P) => MaybeGet<A, B, Params & Property<P, V>>
   withParams: <P2 extends Partial<Params>>(params: P2) => MaybeGet<A, B, Subtract<Params, P2>>
+  withDefault: (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)) => Get<A, B, Params>
+  withDefaultValue: (ifNull: B) => Get<A, B, Params>
   memoize: () => MaybeGet<A, B, Params>
   debug: () => MaybeGet<A, B, Params>
 }
@@ -93,6 +95,17 @@ export namespace MaybeGet {
 
     clone.withParams = <P2 extends Partial<Params>>(params: P2): MaybeGet<A, B, Subtract<Params, P2>> =>
       create<A, B, Subtract<Params, P2>>((a, p) => clone(a, combine(p, params)))
+
+    clone.withDefault = (ifNull: (GetSignature<A, B, Params> | Get<A, B, Params>)): Get<A, B, Params> => {
+      const ifNullGet = Get.create<A, B, Params>(ifNull, ext)
+      return Get.create<A, B, Params>((a, p) => {
+        const b = get(a, p)
+        return b === null ? ifNullGet._underlying(a, p): b
+      }, ext)
+    }
+
+    clone.withDefaultValue = (ifNull: B): Get<A, B, Params> =>
+      clone.withDefault(Get.create<A, B, Params>(_ => ifNull, ext))
 
     clone.memoize = () => clone.extend(Memoize())
     clone.debug = () => clone.extend(Debug())
