@@ -73,13 +73,13 @@ export namespace MaybeSelector {
         case "maybeGet":
           return get.compose(other)
         case "maybeSelector":
-          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set), ext)
+          return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
         case "selector":
-          return MaybeSelector.create(get.compose(other.get), modify.compose(other.set), ext)
+          return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
         case "maybeConverter":
-          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
+          return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
         case "converter":
-          return MaybeSelector.create(get.compose(other.get), set.compose(other.reverseGet), ext)
+          return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
       }
     }
     
