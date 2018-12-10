@@ -4,7 +4,7 @@ import { Modify, DeepMerge, Merge } from './Modify'
 import { MaybeSelector } from './MaybeSelector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
-import { Composable } from './Transformer'
+import { Composable } from './Composable'
 import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
 import { Choose, SelectorChooseOverloads } from './Choose';
@@ -14,6 +14,7 @@ import { Debug } from './Debug';
 import { Subtract, Property } from './util'
 import { MaybeGet } from './MaybeGet';
 import { SelectorIfDefinedOverloads, IfDefined } from './IfDefined';
+import { Dimensionality, Structure } from './Discriminants';
 
 export interface SelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): Get<A, C, Params & BCParams>
@@ -25,6 +26,8 @@ export interface SelectorCompose<A, B, Params> {
 }
 
 export interface Selector<A, B, Params extends {} = {}> {
+  _structure: Structure.Select
+  _dimensionality: Dimensionality.Single
   type: "selector"
   extend: (ext: Extension) => Selector<A, B, Params>
   get: Get<A, B, Params>
@@ -58,19 +61,18 @@ export namespace Selector {
       create(get, set, Extension.combine(ext, newExtension))
 
     const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
-      switch (other.type) {
-        case "get":
-          return get.compose(other)
-        case "maybeGet":
-          return get.compose(other)
-        case "maybeSelector":
-          return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
-        case "selector":
-          return Selector.create(get.compose(other), modify.compose(other.set), ext)
-        case "maybeConverter":
-          return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
-        case "converter":
-          return Selector.create(get.compose(other), set.compose(other.reverseGet), ext)
+      if (Composable.is(Dimensionality.Single, Structure.Get, other)) {
+        return get.compose(other)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Get, other)) {
+        return get.compose(other)
+      } else if (Composable.is(Dimensionality.Single, Structure.Select, other)) {
+        return Selector.create(get.compose(other), modify.compose(other.set), ext)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Select, other)) {
+        return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
+      } else if (Composable.is(Dimensionality.Single, Structure.Convert, other)) {
+        return Selector.create(get.compose(other), set.compose(other.reverseGet), ext)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Convert, other)) {
+        return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
       }
     }
 
@@ -84,6 +86,8 @@ export namespace Selector {
     const withParams = <P2 extends Partial<Params>>(params: P2) => create(get.withParams(params), set.withParams(params), ext)
 
     const selector: Selector<A, B, Params> = {
+      _structure: Structure.Select,
+      _dimensionality: Dimensionality.Single,
       type: "selector",
       extend,
       get,

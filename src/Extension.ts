@@ -1,4 +1,4 @@
-import { All } from './Transformer'
+import { All } from './Composable'
 
 export interface Extension {
   apply: <A, B, Params>(subject: All<A, B, Params>) => void

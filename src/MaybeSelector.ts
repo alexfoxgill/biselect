@@ -2,7 +2,7 @@ import { Get, GetSignature } from './Get'
 import { Set } from './Set'
 import { MaybeGet } from './MaybeGet'
 import { Modify, Merge, DeepMerge } from './Modify'
-import { Composable } from './Transformer'
+import { Composable } from './Composable'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
@@ -14,6 +14,7 @@ import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, Property } from './util';
 import { MaybeSelectorIfDefinedOverloads, IfDefined } from './IfDefined';
+import { Structure, Dimensionality } from './Discriminants';
 
 export interface MaybeSelectorCompose<A, B, Params> {
   <C, BCParams>(other: Get<B, C, BCParams>): MaybeGet<A, C, Params & BCParams>
@@ -25,6 +26,8 @@ export interface MaybeSelectorCompose<A, B, Params> {
 }
 
 export interface MaybeSelector<A, B, Params extends {} = {}> {
+  _structure: Structure.Select
+  _dimensionality: Dimensionality.Maybe
   type: "maybeSelector"
   extend: (ext: Extension) => MaybeSelector<A, B, Params>
 
@@ -67,19 +70,18 @@ export namespace MaybeSelector {
       create(get, set, Extension.combine(ext, newExtension))
 
     const compose: any = <C, BCParams>(other: Composable<B, C, BCParams>) => {
-      switch (other.type) {
-        case "get":
-          return get.compose(other)
-        case "maybeGet":
-          return get.compose(other)
-        case "maybeSelector":
-          return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
-        case "selector":
-          return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
-        case "maybeConverter":
-          return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
-        case "converter":
-          return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
+      if (Composable.is(Dimensionality.Single, Structure.Get, other)) {
+        return get.compose(other)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Get, other)) {
+        return get.compose(other)
+      } else if (Composable.is(Dimensionality.Single, Structure.Select, other)) {
+        return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Select, other)) {
+        return MaybeSelector.create(get.compose(other), modify.compose(other.set), ext)
+      } else if (Composable.is(Dimensionality.Single, Structure.Convert, other)) {
+        return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Convert, other)) {
+        return MaybeSelector.create(get.compose(other), set.compose(other.reverseGet), ext)
       }
     }
     
@@ -99,6 +101,8 @@ export namespace MaybeSelector {
       withDefault(Get.create<A, B, Params>(_ => ifNull, ext))
 
     const maybeSelector: MaybeSelector<A, B, Params> = {
+      _structure: Structure.Select,
+      _dimensionality: Dimensionality.Maybe,
       type: "maybeSelector",
       extend,
       get,

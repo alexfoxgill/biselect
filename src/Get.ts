@@ -1,4 +1,4 @@
-import { Composable } from './Transformer'
+import { Composable } from './Composable'
 import { MaybeSelector } from './MaybeSelector'
 import { Selector } from './Selector'
 import { MaybeConverter } from './MaybeConverter'
@@ -11,6 +11,7 @@ import { Subtract, combine, Property } from './util';
 import { Choose, GetChooseOverloads } from './Choose'
 import { MaybeGet } from './MaybeGet';
 import { GetIfDefinedOverloads, IfDefined } from './IfDefined';
+import { Structure, Dimensionality } from './Discriminants';
 
 export type GetSignature<A, B, Params extends {}> =
   {} extends Params
@@ -33,6 +34,8 @@ export interface GetCombine<A, B, Params> {
 }
 
 export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
+  _structure: Structure.Get
+  _dimensionality: Dimensionality.Single
   type: "get"
   _underlying: (a: A, params: Params) => B
   extend: (ext: Extension) => Get<A, B, Params>
@@ -53,6 +56,8 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
 export namespace Get {
   export const create = <A, B, Params extends {} = {}>(get: (a: A, p: Params) => B, ext: Extension = Extension.none): Get<A, B, Params> => {
     const clone: any = (...args: any[]) => clone._underlying(...args)
+    clone._structure = Structure.Get
+    clone._dimensionality = Dimensionality.Single
     clone.type = "get"
     clone._underlying = (a: A, p: Params) => get(a, p)
     
@@ -60,16 +65,18 @@ export namespace Get {
       create(get, Extension.combine(ext, newExtension))
 
     clone.compose = <C, BCParams extends {}>(other: Composable<B, C, BCParams>) => {
-      switch (other.type) {
-        case "get":
-          return Get.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
-        case "maybeGet":
-          return MaybeGet.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
-        case "maybeSelector":
-        case "selector":
-        case "maybeConverter":
-        case "converter":
-          return clone.compose(other.get)
+      if (Composable.is(Dimensionality.Single, Structure.Get, other)) {
+        return Get.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Get, other)) {
+        return MaybeGet.create<A, C, Params & BCParams>((a, p) => other._underlying(clone(a, p), p), ext)
+      } else if (Composable.is(Dimensionality.Single, Structure.Select, other)) {
+        return clone.compose(other.get)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Select, other)) {
+        return clone.compose(other.get)
+      } else if (Composable.is(Dimensionality.Single, Structure.Convert, other)) {
+        return clone.compose(other.get)
+      } else if (Composable.is(Dimensionality.Maybe, Structure.Convert, other)) {
+        return clone.compose(other.get)
       }
     }
 
