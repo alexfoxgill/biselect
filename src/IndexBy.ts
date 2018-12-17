@@ -2,28 +2,20 @@ import { MaybeSelector } from "./MaybeSelector";
 import { Selector } from "./Selector";
 import { GetSignature } from "./Get";
 import { StringProperty } from "./util";
+import { Composable } from "./Composable";
+import { Dimensionality, Structure } from "./Discriminants";
 
-export type IndexBy<A, B, Params extends {} = {}> =
+export type IndexByOverloads<D extends Dimensionality, S extends Structure, A, B, Params extends {}> =
   B extends { [key: string]: infer C }
-  ? IndexByOverloads<A, B, C, Params>
+  ? {
+    <K extends string>(key: K)
+      : Composable.ComposeResult<A, C, Params & StringProperty<K>, D, Dimensionality.Maybe, S, Structure.Select>
+    <K extends string>(key: K, defaultValue: C)
+      : Composable.ComposeResult<A, C, Params & StringProperty<K>, D, Dimensionality.Single, S, Structure.Select>
+    <K extends string>(key: K, getDefault: GetSignature<B, C, Params & StringProperty<K>>)
+      : Composable.ComposeResult<A, C, Params & StringProperty<K>, D, Dimensionality.Single, S, Structure.Select>
+  }
   : never
-
-export interface IndexByOverloads<A, B, C, Params> {
-  <K extends string>(key: K): MaybeSelector<A, C, Params & StringProperty<K>>
-  <K extends string>(key: K, defaultValue: C): Selector<A, C, Params & StringProperty<K>>
-  <K extends string>(key: K, getDefault: GetSignature<B, C, Params & StringProperty<K>>): Selector<A, C, Params & StringProperty<K>>
-}
-
-export type IndexByMaybe<A, B, Params extends {} = {}> =
-  B extends { [key: string]: infer C }
-  ? IndexByMaybeOverloads<A, B, C, Params>
-  : never
-
-export interface IndexByMaybeOverloads<A, B, C, Params> {
-  <K extends string>(key: K): MaybeSelector<A, C, Params & StringProperty<K>>
-  <K extends string>(key: K, defaultValue: C): MaybeSelector<A, C, Params & StringProperty<K>>
-  <K extends string>(key: K, getDefault: GetSignature<B, C, Params & StringProperty<K>>): MaybeSelector<A, C, Params & StringProperty<K>>
-}
 
 export namespace IndexBy {
   const nullIfUndefined = <T>(x: T) => x === undefined ? null : x

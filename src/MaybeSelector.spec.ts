@@ -5,7 +5,6 @@ import { Get } from './Get';
 import { MaybeSelector } from './MaybeSelector';
 import { Converter } from './Converter';
 import { MaybeConverter } from './MaybeConverter';
-import { IndexBy } from './IndexBy';
 import { Biselect } from '.';
 import { MaybeGet } from './MaybeGet';
 

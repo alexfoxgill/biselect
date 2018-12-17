@@ -6,7 +6,7 @@ import { MaybeConverter } from './MaybeConverter'
 import { Converter } from './Converter'
 import { Composable } from './Composable'
 import { SelectorPropOverloads, Prop } from './Prop'
-import { IndexBy } from './IndexBy';
+import { IndexBy, IndexByOverloads } from './IndexBy';
 import { Choose, ChooseOverloads } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
@@ -35,7 +35,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   modify: Modify<A, B, Params>
   compose: SelectorCompose<A, B, Params>
   prop: SelectorPropOverloads<A, B, Params>
-  indexBy: IndexBy<A, B, Params>
+  indexBy: IndexByOverloads<Dimensionality.Single, Structure.Select, A, B, Params>
   choose: ChooseOverloads<Dimensionality.Single, Structure.Select, A, B, Params>
   ifDefined: IfDefinedOverloads<Dimensionality.Single, Structure.Select, A, B, Params>
   merge: Merge<A, B, Params>

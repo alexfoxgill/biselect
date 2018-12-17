@@ -1,13 +1,14 @@
-import { IndexBy } from "./IndexBy";
+import { IndexBy, IndexByOverloads } from "./IndexBy";
 import { SelectorPropOverloads, Prop } from "./Prop";
 import { MaybeConverter } from "./MaybeConverter";
 import { Choose } from "./Choose";
 import { Extension } from "./Extension";
 import { Memoize } from "./Memoize";
 import { Debug } from "./Debug";
+import { Dimensionality, Structure } from './Discriminants';
 
 export interface Root<A> {
-  indexBy: IndexBy<A, A>
+  indexBy: IndexByOverloads<Dimensionality.Single, Structure.Convert, A, A, {}>
   prop: SelectorPropOverloads<A, A>
   choose<B extends A>(typeGuard: (a: A) => a is B): MaybeConverter<A, B>
   extend: (newExt: Extension) => Root<A>
