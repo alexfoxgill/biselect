@@ -13,7 +13,7 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, Property } from './util';
-import { MaybeSelectorIfDefinedOverloads, IfDefined } from './IfDefined';
+import { IfDefinedOverloads, IfDefined } from './IfDefined';
 import { Structure, Dimensionality } from './Discriminants';
 
 export interface MaybeSelectorCompose<A, B, Params> {
@@ -38,7 +38,7 @@ export interface MaybeSelector<A, B, Params extends {} = {}> {
   prop: MaybeSelectorPropOverloads<A, B, Params>
   indexBy: IndexByMaybe<A, B, Params>
   choose: ChooseOverloads<Dimensionality.Maybe, Structure.Select, A, B, Params>
-  ifDefined: MaybeSelectorIfDefinedOverloads<A, B, Params>
+  ifDefined: IfDefinedOverloads<Dimensionality.Maybe, Structure.Select, A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeSelector<A, B, P2>

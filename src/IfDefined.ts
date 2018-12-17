@@ -1,29 +1,12 @@
-import { Get } from "./Get"
-import { MaybeGet } from "./MaybeGet";
-import { MaybeSelector } from "./MaybeSelector";
-import { Selector } from "./Selector";
 import { Choose } from "./Choose";
+import { Dimensionality, Structure } from "./Discriminants";
+import { Composable } from "./Composable";
 
 export type IfOptional<T, U> = undefined extends T ? U : null extends T ? U : never
 
-export type GetIfDefinedOverloads<A, B, Params> = IfOptional<B, {
-  (): MaybeGet<A, Exclude<B, null | undefined>, Params>
-  (defaultValue: B): Get<A, Exclude<B, null | undefined>, Params>
-}>
-
-export type MaybeGetIfDefinedOverloads<A, B, Params> = IfOptional<B, {
-  (): MaybeGet<A, Exclude<B, null | undefined>, Params>
-  (defaultValue: B): MaybeGet<A, Exclude<B, null | undefined>, Params>
-}>
-
-export type SelectorIfDefinedOverloads<A, B, Params> = IfOptional<B, {
-  (): MaybeSelector<A, Exclude<B, null | undefined>, Params>
-  (defaultValue: B): Selector<A, Exclude<B, null | undefined>, Params>
-}>
-
-export type MaybeSelectorIfDefinedOverloads<A, B, Params> = IfOptional<B, {
-  (): MaybeSelector<A, Exclude<B, null | undefined>, Params>
-  (defaultValue: B): MaybeSelector<A, Exclude<B, null | undefined>, Params>
+export type IfDefinedOverloads<D extends Dimensionality, S extends Structure, A, B, Params extends {}> = IfOptional<B, {
+  (): Composable.ComposeResult<A, Exclude<B, null | undefined>, Params, D, Dimensionality.Maybe, S, Structure.Convert>
+  (defaultValue: B): Composable.ComposeResult<A, Exclude<B, null | undefined>, Params, D, Dimensionality.Single, S, Structure.Convert>
 }>
 
 export namespace IfDefined {

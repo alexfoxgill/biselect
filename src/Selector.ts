@@ -13,7 +13,7 @@ import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, Property } from './util'
 import { MaybeGet } from './MaybeGet';
-import { SelectorIfDefinedOverloads, IfDefined } from './IfDefined';
+import { IfDefinedOverloads, IfDefined } from './IfDefined';
 import { Dimensionality, Structure } from './Discriminants';
 
 export interface SelectorCompose<A, B, Params> {
@@ -37,7 +37,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   prop: SelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
   choose: ChooseOverloads<Dimensionality.Single, Structure.Select, A, B, Params>
-  ifDefined: SelectorIfDefinedOverloads<A, B, Params>
+  ifDefined: IfDefinedOverloads<Dimensionality.Single, Structure.Select, A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => Selector<A, B, P2>

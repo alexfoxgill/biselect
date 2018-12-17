@@ -10,7 +10,7 @@ import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
 import { Choose, ChooseOverloads } from './Choose'
 import { Get, GetSignature } from './Get'
-import { MaybeGetIfDefinedOverloads, IfDefined } from './IfDefined';
+import { IfDefinedOverloads, IfDefined } from './IfDefined';
 import { Structure, Dimensionality } from './Discriminants';
 
 export type MaybeGetSignature<A, B, Params extends {}> =
@@ -43,7 +43,7 @@ export type MaybeGet<A, B, Params extends {} = {}> = MaybeGetSignature<A, B, Par
   compose: MaybeGetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => MaybeGet<A, C, Params>
   choose: ChooseOverloads<Dimensionality.Maybe, Structure.Get, A, B, Params>
-  ifDefined: MaybeGetIfDefinedOverloads<A, B, Params>
+  ifDefined: IfDefinedOverloads<Dimensionality.Maybe, Structure.Get, A, B, Params>
   combine: MaybeGetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>
   mapParams: <P2 extends {}>(map: (p2: P2) => Params) => MaybeGet<A, B, P2>
