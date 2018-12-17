@@ -7,7 +7,7 @@ import { Converter } from './Converter'
 import { Composable } from './Composable'
 import { SelectorPropOverloads, Prop } from './Prop'
 import { IndexBy } from './IndexBy';
-import { Choose, SelectorChooseOverloads } from './Choose';
+import { Choose, ChooseOverloads } from './Choose';
 import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
@@ -36,7 +36,7 @@ export interface Selector<A, B, Params extends {} = {}> {
   compose: SelectorCompose<A, B, Params>
   prop: SelectorPropOverloads<A, B, Params>
   indexBy: IndexBy<A, B, Params>
-  choose: SelectorChooseOverloads<A, B, Params>
+  choose: ChooseOverloads<Dimensionality.Single, Structure.Select, A, B, Params>
   ifDefined: SelectorIfDefinedOverloads<A, B, Params>
   merge: Merge<A, B, Params>
   deepMerge: DeepMerge<A, B, Params>

@@ -8,7 +8,7 @@ import { Extension } from './Extension';
 import { Memoize } from './Memoize';
 import { Debug } from './Debug';
 import { Subtract, combine, Property } from './util';
-import { Choose, GetChooseOverloads } from './Choose'
+import { Choose, ChooseOverloads } from './Choose'
 import { MaybeGet } from './MaybeGet';
 import { GetIfDefinedOverloads, IfDefined } from './IfDefined';
 import { Structure, Dimensionality } from './Discriminants';
@@ -42,7 +42,7 @@ export type Get<A, B, Params extends {} = {}> = GetSignature<A, B, Params> & {
 
   compose: GetCompose<A, B, Params>
   map: <C>(f: (b: B, p: Params) => C) => Get<A, C, Params>
-  choose: GetChooseOverloads<A, B, Params>
+  choose: ChooseOverloads<Dimensionality.Single, Structure.Get, A, B, Params>
   ifDefined: GetIfDefinedOverloads<A, B, Params>
   combine: GetCombine<A, B, Params>
   prop: GetPropOverloads<A, B, Params>

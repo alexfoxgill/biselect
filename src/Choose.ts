@@ -1,31 +1,18 @@
 import { MaybeConverter } from "./MaybeConverter"
 import { Get, GetSignature } from "./Get"
 import { MaybeGet } from "./MaybeGet";
-import { MaybeSelector } from "./MaybeSelector";
-import { Selector } from "./Selector";
+import { Composable } from "./Composable";
+import { Dimensionality, Structure } from "./Discriminants";
 
-export interface GetChooseOverloads<A, B, Params> {
-  <C extends B>(pred: (b: B) => b is C): MaybeGet<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, defaultValue: C): Get<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, getDefault: GetSignature<B, C, Params>): Get<A, C, Params>
-}
+export interface ChooseOverloads<D extends Dimensionality, S extends Structure, A, B, Params extends {}> {
+  <C extends B>(pred: (b: B) => b is C)
+    : Composable.ComposeResult<A, C, Params, D, Dimensionality.Maybe, S, Structure.Convert>
 
-export interface MaybeGetChooseOverloads<A, B, Params> {
-  <C extends B>(pred: (b: B) => b is C): MaybeGet<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, defaultValue: C): MaybeGet<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, getDefault: GetSignature<B, C, Params>): MaybeGet<A, C, Params>
-}
-
-export interface SelectorChooseOverloads<A, B, Params> {
-  <C extends B>(pred: (b: B) => b is C): MaybeSelector<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, defaultValue: C): Selector<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, getDefault: GetSignature<B, C, Params>): Selector<A, C, Params>
-}
-
-export interface MaybeSelectorChooseOverloads<A, B, Params> {
-  <C extends B>(pred: (b: B) => b is C): MaybeSelector<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, defaultValue: C): MaybeSelector<A, C, Params>
-  <C extends B>(pred: (b: B) => b is C, getDefault: GetSignature<B, C, Params>): MaybeSelector<A, C, Params>
+  <C extends B>(pred: (b: B) => b is C, defaultValue: C)
+    : Composable.ComposeResult<A, C, Params, D, Dimensionality.Single, S, Structure.Convert>
+    
+  <C extends B>(pred: (b: B) => b is C, getDefault: GetSignature<B, C, Params>)
+    : Composable.ComposeResult<A, C, Params, D, Dimensionality.Single, S, Structure.Convert>
 }
 
 export namespace Choose {
